@@ -2267,16 +2267,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     def setToolTemp(self):
         """
-        Sets the temperature of the tool, depending on the tool selected
+        Sets the temperature of the tool (tool0) for a single extruder setup.
         """
         logger.info("MainUiClass.setToolTemp started")
         try:
-            if self.toolToggleTemperatureButton.isChecked():
-                octopiclient.gcode(command='M104 T1 S' + str(self.toolTempSpinBox.value()))
-                # octopiclient.setToolTemperature({"tool1": self.toolTempSpinBox.value()})
-            else:
-                octopiclient.gcode(command='M104 T0 S' + str(self.toolTempSpinBox.value()))
-                # octopiclient.setToolTemperature({"tool0": self.toolTempSpinBox.value()})
+            # Set the temperature for tool0
+            octopiclient.gcode(command='M104 T0 S' + str(self.toolTempSpinBox.value()))
         except Exception as e:
             logger.error("Error in MainUiClass.setToolTemp: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.setToolTemp: {}".format(e), overlay=True)
