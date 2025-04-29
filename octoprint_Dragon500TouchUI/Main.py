@@ -408,7 +408,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.networkInfoButton.pressed.connect(self.networkInfo)
             self.configureWifiButton.pressed.connect(self.wifiSettings)
             self.configureStaticIPButton.pressed.connect(self.staticIPSettings)
-            self.networkSettingsBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.settingsPage))
+            self.networkSettingsBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.networkSettingsPage))
 
             # Network Info Page
             self.networkInfoBackButton.pressed.connect(
@@ -2536,29 +2536,22 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         Shows welcome message.
         Homes to MAX
-        goes to position where leveling screws can be opened
-        :return:
+        Goes to position where leveling screws can be opened.
         """
         logger.info("MainUiClass.quickStep1 started")
         try:
-            self.toolZOffsetCaliberationPageCount = 0
-            octopiclient.gcode(command='M104 S200')
-            octopiclient.gcode(command='M104 T1 S200')
-            #octopiclient.gcode(command='M211 S0')  # Disable software endstop
-            octopiclient.gcode(command='T0')  # Set active tool to t0
-            octopiclient.gcode(command='M503')  # makes sure internal value of Z offset and Tool offsets are stored before erasing
-            octopiclient.gcode(command='M420 S0')  # Dissable mesh bed leveling for good measure
+            octopiclient.gcode(command='M104 S200')  # Heat tool0
+            octopiclient.gcode(command='M420 S0')  # Disable mesh bed leveling
             self.stackedWidget.setCurrentWidget(self.quickStep1Page)
             octopiclient.home(['x', 'y', 'z'])
-            octopiclient.gcode(command='T0')
             octopiclient.jog(x=40, y=40, absolute=True, speed=2000)
         except Exception as e:
             logger.error("Error in MainUiClass.quickStep1: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.quickStep1: {}".format(e), overlay=True)
+
     def quickStep2(self):
         """
-        levels first position (RIGHT)
-        :return:
+        Levels the first position (RIGHT).
         """
         logger.info("MainUiClass.quickStep2 started")
         try:
@@ -2578,7 +2571,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     def quickStep3(self):
         """
-        levels second leveling position (LEFT)
+        Levels the second leveling position (LEFT).
         """
         logger.info("MainUiClass.quickStep3 started")
         try:
@@ -2601,12 +2594,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     def quickStep4(self):
         """
-        levels third leveling position  (BACK)
-        :return:
+        Levels the third leveling position (BACK).
         """
         logger.info("MainUiClass.quickStep4 started")
         try:
-            # sent twice for some reason
             self.stackedWidget.setCurrentWidget(self.quickStep4Page)
             octopiclient.jog(z=10, absolute=True, speed=1500)
             octopiclient.jog(x=calibrationPosition['X3'], y=calibrationPosition['Y3'], absolute=True, speed=10000)
