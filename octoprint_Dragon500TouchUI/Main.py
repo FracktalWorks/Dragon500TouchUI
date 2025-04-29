@@ -2279,15 +2279,13 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     def preheatToolTemp(self, temp):
         """
-        Preheats the tool to the given temperature
-        param temp: temperature to preheat to
+        Preheats the tool (tool0) to the given temperature for a single extruder setup.
+        :param temp: Temperature to preheat to
         """
         logger.info("MainUiClass.preheatToolTemp started")
         try:
-            if self.toolToggleTemperatureButton.isChecked():
-                octopiclient.gcode(command='M104 T1 S' + str(temp))
-            else:
-                octopiclient.gcode(command='M104 T0 S' + str(temp))
+            # Set the temperature for tool0
+            octopiclient.gcode(command='M104 T0 S' + str(temp))
             self.toolTempSpinBox.setProperty("value", temp)
         except Exception as e:
             logger.error("Error in MainUiClass.preheatToolTemp: {}".format(e))
