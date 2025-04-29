@@ -2235,30 +2235,17 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     def setActiveExtruder(self, activeNozzle):
         """
-        Sets the active extruder, and changes the UI accordingly
+        Sets the active extruder, and changes the UI accordingly. Simplified for single extruder setup.
         """
         logger.info("MainUiClass.setActiveExtruder started")
         try:
-            activeNozzle = int(activeNozzle)
-            if activeNozzle == 0:
-                self.tool0Label.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/activeNozzle.png")))
-                self.tool1Label.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/Nozzle.png")))
-                self.toolToggleChangeFilamentButton.setChecked(False)
-                # self.toolToggleChangeFilamentButton.setText("0")
-                self.toolToggleMotionButton.setChecked(False)
-                self.toolToggleMotionButton.setText("0")
-                self.activeExtruder = 0
-            elif activeNozzle == 1:
-                self.tool0Label.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/Nozzle.png")))
-                self.tool1Label.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/activeNozzle.png")))
-                self.toolToggleChangeFilamentButton.setChecked(True)
-                # self.toolToggleChangeFilamentButton.setText("1")
-                self.toolToggleMotionButton.setChecked(True)
-                self.toolToggleMotionButton.setText("1")
-                self.activeExtruder = 1
-
-                # set button states
-                # set octoprint if mismatch
+            # Always set the active extruder to tool0 for single extruder setup
+            self.tool0Label.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/activeNozzle.png")))
+            self.toolToggleChangeFilamentButton.setChecked(False)
+          # self.toolToggleChangeFilamentButton.setText("0")
+            self.toolToggleMotionButton.setChecked(False)
+            self.toolToggleMotionButton.setText("0")
+            self.activeExtruder = 0
         except Exception as e:
             logger.error("Error in MainUiClass.setActiveExtruder: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.setActiveExtruder: {}".format(e), overlay=True)
