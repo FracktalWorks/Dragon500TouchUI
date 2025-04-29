@@ -2190,25 +2190,18 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     def selectToolChangeFilament(self):
         """
-        Selects the tool whose temperature needs to be changed. It accordingly changes the button text. it also updates the status of the other toggle buttons
+        Selects the tool for filament change. Simplified for single extruder setup.
         """
         logger.info("MainUiClass.selectToolChangeFilament started")
         try:
-            if self.toolToggleChangeFilamentButton.isChecked():
-                self.setActiveExtruder(1)
-                octopiclient.selectTool(1)
-                octopiclient.jog(tool1PurgePosition['X'],tool1PurgePosition["Y"] ,absolute=True, speed=10000)
-                time.sleep(1)
-
-            else:
-                self.setActiveExtruder(0)
-                octopiclient.selectTool(0)
-                octopiclient.jog(tool0PurgePosition['X'],tool0PurgePosition["Y"] ,absolute=True, speed=10000)
-                time.sleep(1)
+            # Always set the active extruder to tool0 for single extruder setup
+            self.setActiveExtruder(0)
+            octopiclient.selectTool(0)
+            octopiclient.jog(tool0PurgePosition['X'], tool0PurgePosition["Y"], absolute=True, speed=10000)
+            time.sleep(1)
         except Exception as e:
             logger.error("Error in MainUiClass.selectToolChangeFilament: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.selectToolChangeFilament: {}".format(e), overlay=True)
-
 
     def selectToolMotion(self):
         """
@@ -2794,6 +2787,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         except Exception as e:
             logger.error("Error in MainUiClass.testPrint: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.testPrint: {}".format(e), overlay=True)
+    
     def printFromPath(self,path,prnt=True):
         """
         Transfers a file from a specific to octoprint's watched folder so that it gets automatically detected by Octoprint.
