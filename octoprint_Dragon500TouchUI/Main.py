@@ -2648,22 +2648,30 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     def doneStep(self):
         """
-        Exits leveling
-        :return:
+        Exits leveling and finalizes the calibration process for a single extruder setup.
         """
         logger.info("MainUiClass.doneStep started")
         try:
+            # Set the flag to update Z offset
             self.setNewToolZOffsetFromCurrentZBool = True
+
+            # Get the current position and save it
             octopiclient.gcode(command='M114')
             octopiclient.jog(z=4, absolute=True, speed=1500)
+
+            # Ensure tool0 is active
             octopiclient.gcode(command='T0')
-            #octopiclient.gcode(command='M211 S1')  # Disable software endstop
+
+            # Home all axes
             self.stackedWidget.setCurrentWidget(self.calibratePage)
             octopiclient.home(['x', 'y', 'z'])
-            octopiclient.gcode(command='M104 S0')
-            octopiclient.gcode(command='M104 T1 S0')
-            octopiclient.gcode(command='M84')
-            octopiclient.gcode(command='M500')  # store eeprom settings to get Z home offset, mesh bed leveling back
+
+            # Turn off heaters and motors
+            octopiclient.gcode(command='M104 S0')  # Turn off tool0 heater
+            octopiclient.gcode(command='M84')  # Disable motors
+
+            # Save settings to EEPROM
+            octopiclient.gcode(command='M500')  # Save Z offset and other settings
         except Exception as e:
             logger.error("Error in MainUiClass.doneStep: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.doneStep: {}".format(e), overlay=True)
