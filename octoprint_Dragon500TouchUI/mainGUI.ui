@@ -175,7 +175,7 @@ QStatusBar::item {
 background-color: rgb(40, 40, 40);</string>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="loadingPage">
      <widget class="QLabel" name="LoadingLabel">
@@ -5507,7 +5507,7 @@ Calibration</string>
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Select Installed Nozzles Diameter's:</string>
+       <string>Select Installed Nozzle Diameter:</string>
       </property>
      </widget>
      <widget class="QLabel" name="tool0Label_28">
