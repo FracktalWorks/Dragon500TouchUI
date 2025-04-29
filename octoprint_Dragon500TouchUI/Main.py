@@ -2683,13 +2683,24 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 pass
 
     def cancelStep(self):
+        """
+        Cancels the calibration process and resets the printer for a single extruder setup.
+        """
         logger.info("MainUiClass.cancelStep started")
         try:
+            # Reset the UI to the calibration page
             self.stackedWidget.setCurrentWidget(self.calibratePage)
+
+            # Home all axes
             octopiclient.home(['x', 'y', 'z'])
+
+            # Turn off the tool0 heater
             octopiclient.gcode(command='M104 S0')
-            octopiclient.gcode(command='M104 T1 S0')
+
+            # Disable motors
             octopiclient.gcode(command='M84')
+
+            # Stop any running animations
             try:
                 self.movie1.stop()
                 self.movie2.stop()
