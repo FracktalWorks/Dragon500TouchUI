@@ -2305,15 +2305,21 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.preheatBedTemp: {}".format(e), overlay=True)
 
     def coolDownAction(self):
-        """'
-        Turns all heaters and fans off
+        """
+        Turns off all heaters and fans for a single extruder setup.
         """
         logger.info("MainUiClass.coolDownAction started")
         try:
+            # Turn off the fan
             octopiclient.gcode(command='M107')
-            octopiclient.setToolTemperature({"tool0": 0, "tool1": 0})
-            # octopiclient.setToolTemperature({"tool0": 0})
+            
+            # Set tool0 temperature to 0
+            octopiclient.setToolTemperature({"tool0": 0})
+            
+            # Set bed temperature to 0
             octopiclient.setBedTemperature(0)
+            
+            # Update UI elements
             self.toolTempSpinBox.setProperty("value", 0)
             self.bedTempSpinBox.setProperty("value", 0)
         except Exception as e:
