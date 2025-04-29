@@ -10,7 +10,7 @@ api:
   allowCrossOrigin: true
   key: B508534ED20348F090B4D0AD637D3660
 appearance:
-  name: Twin Dragon 400
+  name: Dragon 500
 feature:
   sdSupport: false
 plugins:
@@ -64,7 +64,7 @@ plugins:
   softwareupdate:
     _config_version: 9
     checks:
-      TwinDragon400TouchUI:
+      Dragon500TouchUI:
         disabled: false
       pi_support:
         disabled: true

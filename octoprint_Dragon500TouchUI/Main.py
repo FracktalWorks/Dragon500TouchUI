@@ -522,7 +522,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.QtSocket.update_failed_signal.connect(self.updateFailed)
             self.QtSocket.connected_signal.connect(self.onServerConnected)
             self.QtSocket.filament_sensor_triggered_signal.connect(self.filamentSensorHandler)
-            # self.QtSocket.firmware_updater_signal.connect(self.firmwareUpdateHandler) # Not used for TwinDragon, only for Update Marlin
+            # self.QtSocket.firmware_updater_signal.connect(self.firmwareUpdateHandler) # Not used for Dragon, only for Update Marlin
             #self.QtSocket.z_home_offset_signal.connect(self.getZHomeOffset)  Deprecated, uses probe offset to set initial height instead
             self.QtSocket.active_extruder_signal.connect(self.setActiveExtruder)
             self.QtSocket.z_probing_failed_signal.connect(self.showProbingFailed)
@@ -805,7 +805,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                     self.printRestoreMessageBox(response["file"])
                 else:
                     # self.firmwareUpdateCheck()
-                    pass #Firmware update Functionality not needed for Twin Dragon, need to modify this for updating cfg files
+                    pass #Firmware update Functionality not needed for Dragon, need to modify this for updating cfg files
             except:
                 pass
         except Exception as e:
