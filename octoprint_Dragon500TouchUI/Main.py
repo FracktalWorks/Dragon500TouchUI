@@ -1599,23 +1599,25 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             dialog.WarningOk(self, "Error in MainUiClass.unloadFilament: {}".format(e), overlay=True)
 
     def loadFilament(self):
+        """
+        Loads filament into the single extruder (tool0).
+        """
         logger.info("MainUiClass.loadFilament started")
         try:
-            if self.printerStatusText not in ["Printing","Paused"]:
-                if self.activeExtruder == 1:
-                    octopiclient.jog(tool1PurgePosition['X'],tool1PurgePosition["Y"] ,absolute=True, speed=10000)
+            # Move to the purge position for tool0
+            if self.printerStatusText not in ["Printing", "Paused"]:
+                octopiclient.jog(tool0PurgePosition['X'], tool0PurgePosition["Y"], absolute=True, speed=10000)
 
-                else:
-                    octopiclient.jog(tool0PurgePosition['X'],tool0PurgePosition["Y"] ,absolute=True, speed=10000)
-
+            # Set the tool0 temperature based on the selected filament
             if self.changeFilamentComboBox.findText("Loaded Filament") == -1:
-                octopiclient.setToolTemperature({"tool1": filaments[str(
-                    self.changeFilamentComboBox.currentText())]}) if self.activeExtruder == 1 else octopiclient.setToolTemperature(
-                    {"tool0": filaments[str(self.changeFilamentComboBox.currentText())]})
+                octopiclient.setToolTemperature({"tool0": filaments[str(self.changeFilamentComboBox.currentText())]})
+
+            # Update the UI to show progress
             self.stackedWidget.setCurrentWidget(self.changeFilamentProgressPage)
-            self.changeFilamentStatus.setText("Heating Tool {}, Please Wait...".format(str(self.activeExtruder)))
+            self.changeFilamentStatus.setText("Heating Tool 0, Please Wait...")
             self.changeFilamentNameOperation.setText("Loading {}".format(str(self.changeFilamentComboBox.currentText())))
-            # this flag tells the updateTemperature function that runs every second to update the filament change progress bar as well, and to load or unload after heating done
+
+            # Set flags for heating and loading
             self.changeFilamentHeatingFlag = True
             self.loadFlag = True
         except Exception as e:
