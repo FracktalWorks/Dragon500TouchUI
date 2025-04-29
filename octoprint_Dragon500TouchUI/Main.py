@@ -2188,6 +2188,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     ''' ++++++++++++++++++++++++++++Active Extruder/Tool Change++++++++++++++++++++++++ '''
 
+
     def selectToolChangeFilament(self):
         """
         Selects the tool for filament change. Simplified for single extruder setup.
@@ -2222,18 +2223,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     def selectToolTemperature(self):
         """
-        Selects the tool whose temperature needs to be changed. It accordingly changes the button text.it also updates the status of the other toggle buttons
+        Selects the tool whose temperature needs to be changed. Simplified for single extruder setup.
         """
         logger.info("MainUiClass.selectToolTemperature started")
         try:
-            # self.toolToggleTemperatureButton.setText(
-            #     "1") if self.toolToggleTemperatureButton.isChecked() else self.toolToggleTemperatureButton.setText("0")
-            if self.toolToggleTemperatureButton.isChecked():
-                print ("extruder 1 Temperature")
-                self.toolTempSpinBox.setProperty("value", float(self.tool1TargetTemperature.text()))
-            else:
-                print ("extruder 0 Temperature")
-                self.toolTempSpinBox.setProperty("value", float(self.tool0TargetTemperature.text()))
+            # Always set the temperature spinbox to tool0's target temperature for single extruder setup
+            self.toolTempSpinBox.setProperty("value", float(self.tool0TargetTemperature.text()))
         except Exception as e:
             logger.error("Error in MainUiClass.selectToolTemperature: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.selectToolTemperature: {}".format(e), overlay=True)
@@ -2387,7 +2382,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         except Exception as e:
             error_message = f"Error in inptuShaperCalibrate: {str(e)}"
             logger.error(error_message)
-            dialog.WarningOk(self, error_message, overlay=True)
+            dialog.WarningOk(error_message, overlay=True)
 
     def setZToolOffset(self, offset):
         """
