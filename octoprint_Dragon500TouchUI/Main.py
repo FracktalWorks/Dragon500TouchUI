@@ -1994,85 +1994,51 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         Slot that gets a signal originating from the thread that keeps polling for printer status
         runs at 1HZ, so do things that need to be constantly updated only. This also controls the cooling fan depending on the temperatures
-        :param temperature: dict containing key:value pairs with keys being the tools, bed and their values being their corresponding temperratures
+        :param temperature: dict containing key:value pairs with keys being the tools, bed and their values being their corresponding temperatures
         """
         try:
-            try:
-                if temperature['tool0Target'] == 0:
-                    self.tool0TempBar.setMaximum(300)
-                    self.tool0TempBar.setStyleSheet(styles.bar_heater_cold)
-                elif temperature['tool0Actual'] <= temperature['tool0Target']:
-                    self.tool0TempBar.setMaximum(temperature['tool0Target'])
-                    self.tool0TempBar.setStyleSheet(styles.bar_heater_heating)
-                else:
-                    self.tool0TempBar.setMaximum(temperature['tool0Actual'])
-                self.tool0TempBar.setValue(temperature['tool0Actual'])
-                self.tool0ActualTemperature.setText(str(int(temperature['tool0Actual'])))  # + unichr(176)
-                self.tool0TargetTemperature.setText(str(int(temperature['tool0Target'])))
+            # Update tool0 temperature
+            if temperature['tool0Target'] == 0:
+                self.tool0TempBar.setMaximum(300)
+                self.tool0TempBar.setStyleSheet(styles.bar_heater_cold)
+            elif temperature['tool0Actual'] <= temperature['tool0Target']:
+                self.tool0TempBar.setMaximum(temperature['tool0Target'])
+                self.tool0TempBar.setStyleSheet(styles.bar_heater_heating)
+            else:
+                self.tool0TempBar.setMaximum(temperature['tool0Actual'])
+            self.tool0TempBar.setValue(temperature['tool0Actual'])
+            self.tool0ActualTemperature.setText(str(int(temperature['tool0Actual'])))
+            self.tool0TargetTemperature.setText(str(int(temperature['tool0Target'])))
 
-                if temperature['tool1Target'] == 0:
-                    self.tool1TempBar.setMaximum(300)
-                    self.tool1TempBar.setStyleSheet(styles.bar_heater_cold)
-                elif temperature['tool1Actual'] <= temperature['tool1Target']:
-                    self.tool1TempBar.setMaximum(temperature['tool1Target'])
-                    self.tool1TempBar.setStyleSheet(styles.bar_heater_heating)
-                else:
-                    self.tool1TempBar.setMaximum(temperature['tool1Actual'])
-                self.tool1TempBar.setValue(temperature['tool1Actual'])
-                self.tool1ActualTemperature.setText(str(int(temperature['tool1Actual'])))  # + unichr(176)
-                self.tool1TargetTemperature.setText(str(int(temperature['tool1Target'])))
+            # Update bed temperature
+            if temperature['bedTarget'] == 0:
+                self.bedTempBar.setMaximum(150)
+                self.bedTempBar.setStyleSheet(styles.bar_heater_cold)
+            elif temperature['bedActual'] <= temperature['bedTarget']:
+                self.bedTempBar.setMaximum(temperature['bedTarget'])
+                self.bedTempBar.setStyleSheet(styles.bar_heater_heating)
+            else:
+                self.bedTempBar.setMaximum(temperature['bedActual'])
+            self.bedTempBar.setValue(temperature['bedActual'])
+            self.bedActualTemperatute.setText(str(int(temperature['bedActual'])))
+            self.bedTargetTemperature.setText(str(int(temperature['bedTarget'])))
 
-                if temperature['bedTarget'] == 0:
-                    self.bedTempBar.setMaximum(150)
-                    self.bedTempBar.setStyleSheet(styles.bar_heater_cold)
-                elif temperature['bedActual'] <= temperature['bedTarget']:
-                    self.bedTempBar.setMaximum(temperature['bedTarget'])
-                    self.bedTempBar.setStyleSheet(styles.bar_heater_heating)
-                else:
-                    self.bedTempBar.setMaximum(temperature['bedActual'])
-                self.bedTempBar.setValue(temperature['bedActual'])
-                self.bedActualTemperatute.setText(str(int(temperature['bedActual'])))  # + unichr(176))
-                self.bedTargetTemperature.setText(str(int(temperature['bedTarget'])))  # + unichr(176))
-
-            except:
-                pass
-
-            # updates the progress bar on the change filament screen
+            # Update the progress bar on the change filament screen
             if self.changeFilamentHeatingFlag:
-                if self.activeExtruder == 0:
-                    if temperature['tool0Target'] == 0:
-                        self.changeFilamentProgress.setMaximum(300)
-                    elif temperature['tool0Target'] - temperature['tool0Actual'] > 1:
-                        self.changeFilamentProgress.setMaximum(temperature['tool0Target'])
+                if temperature['tool0Target'] == 0:
+                    self.changeFilamentProgress.setMaximum(300)
+                elif temperature['tool0Target'] - temperature['tool0Actual'] > 1:
+                    self.changeFilamentProgress.setMaximum(temperature['tool0Target'])
+                else:
+                    self.changeFilamentProgress.setMaximum(temperature['tool0Actual'])
+                    self.changeFilamentHeatingFlag = False
+                    if self.loadFlag:
+                        self.changeFilamentLoadFunction()
                     else:
-                        self.changeFilamentProgress.setMaximum(temperature['tool0Actual'])
-                        self.changeFilamentHeatingFlag = False
-                        if self.loadFlag:
-                            self.changeFilamentLoadFunction()
-                            #self.stackedWidget.setCurrentWidget(self.changeFilamentExtrudePage)
-                        else:
-                            #self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
-                            octopiclient.extrude(5)     # extrudes some amount of filament to prevent plugging
-                            self.changeFilamentRetractFunction()
+                        octopiclient.extrude(5)  # Extrudes some amount of filament to prevent plugging
+                        self.changeFilamentRetractFunction()
+                self.changeFilamentProgress.setValue(temperature['tool0Actual'])
 
-                    self.changeFilamentProgress.setValue(temperature['tool0Actual'])
-                elif self.activeExtruder == 1:
-                    if temperature['tool1Target'] == 0:
-                        self.changeFilamentProgress.setMaximum(300)
-                    elif temperature['tool1Target'] - temperature['tool1Actual'] > 1:
-                        self.changeFilamentProgress.setMaximum(temperature['tool1Target'])
-                    else:
-                        self.changeFilamentProgress.setMaximum(temperature['tool1Actual'])
-                        self.changeFilamentHeatingFlag = False
-                        if self.loadFlag:
-                            self.changeFilamentLoadFunction()
-                            #self.stackedWidget.setCurrentWidget(self.changeFilamentExtrudePage)
-                        else:
-                            #self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
-                            octopiclient.extrude(5)     # extrudes some amount of filament to prevent plugging
-                            self.changeFilamentRetractFunction()
-
-                    self.changeFilamentProgress.setValue(temperature['tool1Actual'])
         except Exception as e:
             logger.error("Error in MainUiClass.updateTemperature: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.updateTemperature: {}".format(e), overlay=True)
