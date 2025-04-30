@@ -26,40 +26,18 @@ import subprocess
 from octoprintAPI import octoprintAPI
 from hurry.filesize.filesize import size
 from datetime import datetime
-# from functools import partial
 import qrcode
-# pip install websocket-client
-import websocket #https://pypi.org/project/websocket-client/
+import websocket
 import json
 import random
 import uuid
 import os
-# import serial
 import io
 import requests
 import re
 from collections import OrderedDict
 import base64
 import threading
-
-
-#if not Development:
-    #import RPi.GPIO as GPIO
-    #GPIO.setmode(GPIO.BCM)  # Use the board numbering scheme
-    #GPIO.setwarnings(False)  # Disable GPIO warnings H
-
-# TODO:
-'''
-# Error Handaling
-# Logging UI errors to Octoprint Log
-# Configuration File Seperation
-# Add new Klipper Configuraion
-
-'''
-
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# ++++++++++++++++++++++++Logging+++++++++++++++++++++++++++++++++++++++++++++++
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from logger import setup_logger, delete_old_logs
 
@@ -71,8 +49,6 @@ delete_old_logs()
 
 # Now you can use logger to log messages
 logger.info("TouchUI started")
-
-
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ++++++++++++++++++++++++Global variables++++++++++++++++++++++++++++++++++++++
@@ -98,16 +74,15 @@ filaments = [
 
 filaments = OrderedDict(filaments)
 
-calibrationPosition = {'X1': 110, 'Y1': 67, #110, 18
-                       'X2': 410, 'Y2': 67, #510, 18
-                       'X3': 260, 'Y3': 380, #310, 308
+calibrationPosition = {'X1': 110, 'Y1': 67,
+                       'X2': 410, 'Y2': 67,
+                       'X3': 260, 'Y3': 380,
                        'X4': 260, 'Y4': 20
                        }
 
 tool0PurgePosition = {'X': 15, 'Y': -43}
-tool1PurgePosition = {'X': 500, 'Y': -43}
 
-ptfeTubeLength = 2000 #for TD400 and D500
+ptfeTubeLength = 2000
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -136,7 +111,6 @@ def getIP(interface):
     try:
         scan_result = \
             (subprocess.Popen("ifconfig | grep " + interface + " -A 1", stdout=subprocess.PIPE, shell=True).communicate()[0]).decode("utf-8")
-        # Processing STDOUT into a dictionary that later will be converted to a json file later
         rInetAddr = r"inet\s*([\d.]+)"
         rInet6Addr = r"inet6"
         mt6Ip = re.search(rInet6Addr, scan_result)
@@ -184,43 +158,16 @@ def getHostname():
         logger.error("Error in getHostname: {}".format(e))
         return "Error"
 
-#class BuzzerFeedback(object):
-    #def __init__(self, buzzerPin):
-        #if not Development:
-            #GPIO.cleanup()
-            #self.buzzerPin = buzzerPin
-            #GPIO.setup(self.buzzerPin, GPIO.OUT)
-            #GPIO.output(self.buzzerPin, GPIO.LOW)
-        #pass
-
-    #@run_async
-    #def buzz(self):
-        #if not Development:
-            #GPIO.output(self.buzzerPin, (GPIO.HIGH))
-            #time.sleep(0.005)
-            #GPIO.output(self.buzzerPin, GPIO.LOW)
-        #pass
-
-#buzzer = BuzzerFeedback(12)
-
-
-
-'''
-To get the buzzer to beep on button press
-'''
-
 OriginalPushButton = QtWidgets.QPushButton
 OriginalToolButton = QtWidgets.QToolButton
 
 class QPushButtonFeedback(QtWidgets.QPushButton):
     def mousePressEvent(self, QMouseEvent):
-        #buzzer.buzz()
         OriginalPushButton.mousePressEvent(self, QMouseEvent)
 
 
 class QToolButtonFeedback(QtWidgets.QToolButton):
     def mousePressEvent(self, QMouseEvent):
-        #buzzer.buzz()
         OriginalToolButton.mousePressEvent(self, QMouseEvent)
 
 
@@ -257,7 +204,6 @@ class ClickableLineEdit(QtWidgets.QLineEdit):
     def __init__(self, parent):
         QtWidgets.QLineEdit.__init__(self, parent)
     def mousePressEvent(self, QMouseEvent):
-        #buzzer.buzz()
         self.clicked_signal.emit()
 
 
@@ -351,9 +297,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             logger.error("Error in MainUiClass.setupUi: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.setupUi: {}".format(e), overlay=True)
 
-
-
-
     def safeProceed(self):
         """
         When Octoprint server cannot connect for whatever reason, still show the home screen to conduct diagnostics
@@ -377,7 +320,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
             # Home Screen:
             self.stopButton.setDisabled(True)
-            # self.menuButton.pressed.connect(self.keyboardButton)
             self.menuButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.MenuPage))
             self.controlButton.setDisabled(True)
             self.playPauseButton.setDisabled(True)
@@ -432,15 +374,8 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 lambda: self.stackedWidget.setCurrentWidget(self.networkSettingsPage))
             self.deleteStaticIPSettingsButton.pressed.connect(self.deleteStaticIPSettings)
 
-            # # Display settings
-            # self.rotateDisplay.pressed.connect(self.showRotateDisplaySettingsPage)
-            # self.calibrateTouch.pressed.connect(self.touchCalibration)
+            # Display settings
             self.displaySettingsBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.settingsPage))
-            #
-            # # Rotate Display Settings
-            # self.rotateDisplaySettingsDoneButton.pressed.connect(self.saveRotateDisplaySettings)
-            # self.rotateDisplaySettingsCancelButton.pressed.connect(
-            #     lambda: self.stackedWidget.setCurrentWidget(self.displaySettingsPage))
 
             # QR Code
             self.QRCodeBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.settingsPage))
@@ -448,9 +383,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             # SoftwareUpdatePage
             self.softwareUpdateBackButton.setDisabled(True)
             self.performUpdateButton.setDisabled(True)
-
-            # # Firmware update page
-            # self.firmwareUpdateBackButton.setDisabled(True)
 
             # Filament sensor toggle
             self.toggleFilamentSensorButton.setDisabled(True)
@@ -510,7 +442,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.setActions started")
         try:
-            #--Dual Caliberation Addition--
             self.QtSocket.set_z_tool_offset_signal.connect(self.setZToolOffset)
             self.QtSocket.z_probe_offset_signal.connect(self.updateEEPROMProbeOffset)
             self.QtSocket.temperatures_signal.connect(self.updateTemperature)
@@ -522,9 +453,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.QtSocket.update_failed_signal.connect(self.updateFailed)
             self.QtSocket.connected_signal.connect(self.onServerConnected)
             self.QtSocket.filament_sensor_triggered_signal.connect(self.filamentSensorHandler)
-            # self.QtSocket.firmware_updater_signal.connect(self.firmwareUpdateHandler) # Not used for Dragon, only for Update Marlin
-            #self.QtSocket.z_home_offset_signal.connect(self.getZHomeOffset)  Deprecated, uses probe offset to set initial height instead
-            self.QtSocket.active_extruder_signal.connect(self.setActiveExtruder)
             self.QtSocket.z_probing_failed_signal.connect(self.showProbingFailed)
             self.QtSocket.tool_offset_signal.connect(self.getToolOffset)
             self.QtSocket.printer_error_signal.connect(self.showPrinterError)
@@ -539,7 +467,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     
             # Home Screen:
             self.stopButton.pressed.connect(self.stopActionMessageBox)
-            # self.menuButton.pressed.connect(self.keyboardButton)
             self.menuButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.MenuPage))
             self.controlButton.pressed.connect(self.control)
             self.playPauseButton.clicked.connect(self.playPauseAction)
@@ -555,12 +482,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             # Calibrate Page
             self.calibrateBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.MenuPage))
             self.nozzleOffsetButton.pressed.connect(self.requestEEPROMProbeOffset)
-            # the -ve sign is such that its converted to home offset and not just distance between nozzle and bed
+# the -ve sign is such that its converted to home offset and not just distance between nozzle and bed
             self.nozzleOffsetSetButton.pressed.connect(
                 lambda: self.setZProbeOffset(self.nozzleOffsetDoubleSpinBox.value()))
             self.nozzleOffsetBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.calibratePage))
     
-            # --Dual Caliberation Addition--
+# --Dual Caliberation Addition--
             self.moveZMT1CaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.025))
             self.moveZPT1CaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.025))
     
@@ -576,50 +503,19 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.quickStep4CancelButton.pressed.connect(self.cancelStep)
             self.nozzleHeightStep1CancelButton.pressed.connect(self.cancelStep)
     
-            # --IDEX Caliberation Addition--
-    
-            self.idexCalibrationWizardButton.clicked.connect(self.idexConfigStep1)
-            self.idexConfigStep1NextButton.clicked.connect(self.idexConfigStep2)
-            self.idexConfigStep2NextButton.clicked.connect(self.idexConfigStep3)
-            self.idexConfigStep3NextButton.clicked.connect(self.idexConfigStep4)
-            self.idexConfigStep4NextButton.clicked.connect(self.idexConfigStep5)
-            self.idexConfigStep5NextButton.clicked.connect(self.idexDoneStep)
-            self.idexConfigStep1CancelButton.pressed.connect(self.idexCancelStep)
-            self.idexConfigStep2CancelButton.pressed.connect(self.idexCancelStep)
-            self.idexConfigStep3CancelButton.pressed.connect(self.idexCancelStep)
-            self.idexConfigStep4CancelButton.pressed.connect(self.idexCancelStep)
-            self.idexConfigStep5CancelButton.pressed.connect(self.idexCancelStep)
-            self.moveZMIdexButton.pressed.connect(lambda: octopiclient.jog(z=-0.1))
-            self.moveZPIdexButton.pressed.connect(lambda: octopiclient.jog(z=0.1))
-            
-            self.toolOffsetXSetButton.pressed.connect(self.setToolOffsetX)
-            self.toolOffsetYSetButton.pressed.connect(self.setToolOffsetY)
-            self.toolOffsetZSetButton.pressed.connect(self.setToolOffsetZ)
-            self.toolOffsetXYBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.calibratePage))
-            self.toolOffsetZBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.calibratePage))
-            self.toolOffsetXYButton.pressed.connect(self.updateToolOffsetXY)
-            self.toolOffsetZButton.pressed.connect(self.updateToolOffsetZ)
-    
             self.testPrintsButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.testPrintsPage1_6))
             self.testPrintsNextButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.testPrintsPage2_6))
             self.testPrintsBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.calibratePage))
             self.testPrintsCancelButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.calibratePage))
             self.dualCaliberationPrintButton.pressed.connect(
-                lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''),
-                                       str(self.testPrintsTool1SizeComboBox.currentText()).replace('.', ''), 'dualCalibration'))
+                lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''), 'dualCalibration'))
             self.bedLevelPrintButton.pressed.connect(
-                lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''),
-                                       str(self.testPrintsTool1SizeComboBox.currentText()).replace('.', ''), 'bedLevel'))
+                lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''), 'bedLevel'))
             self.movementTestPrintButton.pressed.connect(
-                lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''),
-                                       str(self.testPrintsTool1SizeComboBox.currentText()).replace('.', ''), 'movementTest'))
+                lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''), 'movementTest'))
             self.singleNozzlePrintButton.pressed.connect(
-                lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''),
-                                       str(self.testPrintsTool1SizeComboBox.currentText()).replace('.', ''), 'dualTest'))
-            self.dualNozzlePrintButton.pressed.connect(
-                lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''),
-                                       str(self.testPrintsTool1SizeComboBox.currentText()).replace('.', ''), 'singleTest'))
-            #~ Input Shaping~#
+                lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''), 'singleTest'))
+    
             self.inputShaperCalibrateButton.pressed.connect(self.inputShaperCalibrate)
 
             # PrintLocationScreen
@@ -672,20 +568,13 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.step10Button.pressed.connect(lambda: self.setStep(10))
             self.homeXYButton.pressed.connect(lambda: octopiclient.home(['x', 'y']))
             self.homeZButton.pressed.connect(lambda: octopiclient.home(['z']))
-            self.toolToggleTemperatureButton.clicked.connect(self.selectToolTemperature)
-            self.toolToggleMotionButton.clicked.connect(self.selectToolMotion)
             self.controlBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.homePage))
             self.setToolTempButton.pressed.connect(self.setToolTemp)
-            self.tool180PreheatButton.pressed.connect(lambda: octopiclient.gcode(command='M104 T1 S180') if self.toolToggleTemperatureButton.isChecked() else octopiclient.gcode(command='M104 T0 S180'))
-            self.tool250PreheatButton.pressed.connect(lambda: octopiclient.gcode(command='M104 T1 S250') if self.toolToggleTemperatureButton.isChecked() else octopiclient.gcode(command='M104 T0 S250'))
             self.tool180PreheatButton.pressed.connect(lambda: self.preheatToolTemp(180))
             self.tool250PreheatButton.pressed.connect(lambda: self.preheatToolTemp(250))
             self.setBedTempButton.pressed.connect(lambda: octopiclient.setBedTemperature(self.bedTempSpinBox.value()))
             self.bed60PreheatButton.pressed.connect(lambda: self.preheatBedTemp(60))
             self.bed100PreheatButton.pressed.connect(lambda: self.preheatBedTemp(100))
-            #self.chamber40PreheatButton.pressed.connect(lambda: self.preheatChamberTemp(40))
-            #self.chamber70PreheatButton.pressed.connect(lambda: self.preheatChamberTemp(70))
-            #self.setChamberTempButton.pressed.connect(lambda: octopiclient.gcode(command='M141 S{}'.format(self.chamberTempSpinBox.value())))
             self.setFlowRateButton.pressed.connect(lambda: octopiclient.flowrate(self.flowRateSpinBox.value()))
             self.setFeedRateButton.pressed.connect(lambda: octopiclient.feedrate(self.feedRateSpinBox.value()))
     
@@ -694,7 +583,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     
             # ChangeFilament rutien
             self.changeFilamentButton.pressed.connect(self.changeFilament)
-            self.toolToggleChangeFilamentButton.clicked.connect(self.selectToolChangeFilament)
             self.changeFilamentBackButton.pressed.connect(self.control)
             self.changeFilamentBackButton2.pressed.connect(self.changeFilamentCancel)
             self.changeFilamentBackButton3.pressed.connect(self.changeFilamentCancel)
@@ -703,8 +591,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.loadedTillExtruderButton.pressed.connect(self.changeFilamentExtrudePageFunction)
             self.loadDoneButton.pressed.connect(self.control)
             self.unloadDoneButton.pressed.connect(self.changeFilament)
-            # self.retractFilamentButton.pressed.connect(lambda: octopiclient.extrude(-20))
-            # self.ExtrudeButton.pressed.connect(lambda: octopiclient.extrude(20))
     
             # Settings Page
             self.settingsBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.MenuPage))
@@ -746,15 +632,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 lambda: self.stackedWidget.setCurrentWidget(self.networkSettingsPage))
             self.deleteStaticIPSettingsButton.pressed.connect(self.deleteStaticIPSettings)
     
-            # # Display settings
-            # self.rotateDisplay.pressed.connect(self.showRotateDisplaySettingsPage)
-            # self.calibrateTouch.pressed.connect(self.touchCalibration)
             self.displaySettingsBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.settingsPage))
-            #
-            # # Rotate Display Settings
-            # self.rotateDisplaySettingsDoneButton.pressed.connect(self.saveRotateDisplaySettings)
-            # self.rotateDisplaySettingsCancelButton.pressed.connect(
-            #     lambda: self.stackedWidget.setCurrentWidget(self.displaySettingsPage))
     
             # QR Code
             self.QRCodeBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.settingsPage))
@@ -762,9 +640,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             # SoftwareUpdatePage
             self.softwareUpdateBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.settingsPage))
             self.performUpdateButton.pressed.connect(lambda: octopiclient.performSoftwareUpdate())
-    
-            # # Firmware update page
-            # self.firmwareUpdateBackButton.pressed.connect(self.firmwareUpdateBack)
     
             # Filament sensor toggle
             self.toggleFilamentSensorButton.clicked.connect(self.toggleFilamentSensor)
@@ -797,15 +672,14 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.onServerConnected started")
         try:
-            octopiclient.gcode(command='status') #get klipper status. hanle in
+            octopiclient.gcode(command='status')
             self.isFilamentSensorInstalled()
             try:
                 response = octopiclient.isFailureDetected()
                 if response["canRestore"] is True:
                     self.printRestoreMessageBox(response["file"])
                 else:
-                    # self.firmwareUpdateCheck()
-                    pass #Firmware update Functionality not needed for Dragon, need to modify this for updating cfg files
+                    pass
             except:
                 pass
         except Exception as e:
@@ -827,7 +701,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 success = req.status_code == requests.codes.ok
             except:
                 pass
-            # self.toggleFilamentSensorButton.setEnabled(success)
             return success
         except Exception as e:
             logger.error("Error in MainUiClass.isFilamentSensorInstalled: {}".format(e))
@@ -838,29 +711,16 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         Toggles the filament sensor
         """
         logger.info("MainUiClass.toggleFilamentSensor started")
-        # headers = {'X-Api-Key': apiKey}
-        # # payload = {'sensor_enabled': self.toggleFilamentSensorButton.isChecked()}
-        # requests.get('http://{}/plugin/Julia2018FilamentSensor/toggle'.format(ip), headers=headers)   # , data=payload)
         icon = 'filamentSensorOn' if self.toggleFilamentSensorButton.isChecked() else 'filamentSensorOff'
         self.toggleFilamentSensorButton.setIcon(QtGui.QIcon(_fromUtf8("templates/img/" + icon)))
-        #octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=SFS_T0 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
-        #octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=SFS_T1 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
-        #octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=switch_sensor_T0 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
-        #octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=encoder_sensor_T0 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
-        #octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=switch_sensor_T1 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
-        #octopiclient.gcode(command="SET_FILAMENT_SENSOR SENSOR=encoder_sensor_T1 ENABLE={}".format(int(self.toggleFilamentSensorButton.isChecked())))
         octopiclient.gcode(command="PRIMARY_SFS_ENABLE{}".format(int(self.toggleFilamentSensorButton.isChecked())))
+
     def filamentSensorHandler(self, data):
         """
         Handles the filament sensor
         """
         logger.info("MainUiClass.filamentSensorHandler started")
         try:
-            # sensor_enabled = False
-            # # print(data)
-            #
-            # if 'sensor_enabled' in data:
-            #     sensor_enabled = data["sensor_enabled"] == 1
             print(data)
 
             icon = 'filamentSensorOn' if self.toggleFilamentSensorButton.isChecked() else 'filamentSensorOff'
@@ -870,17 +730,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 return
 
             triggered_extruder0 = False
-            triggered_extruder1 = False
-            # triggered_door = False
-            # pause_print = False
-            # triggered_door = False
-            # pause_print = False
 
             if '0' in data:
                 triggered_extruder0 = True
-
-            if '1' in data:
-                triggered_extruder1 = True
 
             if 'disabled' in data:
                 self.toggleFilamentSensorButton.setIcon(QtGui.QIcon(_fromUtf8("templates/img/filamentSensorOff")))
@@ -888,59 +740,14 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             if 'enabled' in data:
                 self.toggleFilamentSensorButton.setIcon(QtGui.QIcon(_fromUtf8("templates/img/filamentSensorOn")))
 
-            # if 'door' in data:
-            #     triggered_door = data["door"] == 0
-            # if 'pause_print' in data:
-            #     pause_print = data["pause_print"]
-                
-            # if 'door' in data:
-            #     triggered_door = data["door"] == 0
-            # if 'pause_print' in data:
-            #     pause_print = data["pause_print"]
-
             if triggered_extruder0 and self.stackedWidget.currentWidget() not in [self.changeFilamentPage, self.changeFilamentProgressPage,
                                     self.changeFilamentExtrudePage, self.changeFilamentRetractPage,self.changeFilamentLoadPage]:
                 octopiclient.gcode(command='PAUSE')
                 if dialog.WarningOk(self, "Filament outage or clog detected in Extruder 0. Please check the external motors. Print paused"):
                     pass
-
-            if triggered_extruder1 and self.stackedWidget.currentWidget() not in [self.changeFilamentPage, self.changeFilamentProgressPage,
-                                    self.changeFilamentExtrudePage, self.changeFilamentRetractPage,self.changeFilamentLoadPage]:
-                octopiclient.gcode(command='PAUSE')
-                if dialog.WarningOk(self, "Filament outage or clog detected in Extruder 1. Please check the external motors. Print paused"):
-                    pass
-
-            # if triggered_door:
-            #     if self.printerStatusText == "Printing":
-            #         no_pause_pages = [self.controlPage, self.changeFilamentPage, self.changeFilamentProgressPage,
-            #                           self.changeFilamentExtrudePage, self.changeFilamentRetractPage,self.changeFilamentLoadPage,]
-            #         if not pause_print or self.stackedWidget.currentWidget() in no_pause_pages:
-            #             if dialog.WarningOk(self, "Door opened"):
-            #                 return
-            #         octopiclient.pausePrint()
-            #         if dialog.WarningOk(self, "Door opened. Print paused.", overlay=True):
-            #             return
-            #     else:
-            #         if dialog.WarningOk(self, "Door opened"):
-            #             return
-            # if triggered_door:
-            #     if self.printerStatusText == "Printing":
-            #         no_pause_pages = [self.controlPage, self.changeFilamentPage, self.changeFilamentProgressPage,
-            #                           self.changeFilamentExtrudePage, self.changeFilamentRetractPage,self.changeFilamentLoadPage,]
-            #         if not pause_print or self.stackedWidget.currentWidget() in no_pause_pages:
-            #             if dialog.WarningOk(self, "Door opened"):
-            #                 return
-            #         octopiclient.pausePrint()
-            #         if dialog.WarningOk(self, "Door opened. Print paused.", overlay=True):
-            #             return
-            #     else:
-            #         if dialog.WarningOk(self, "Door opened"):
-            #             return
         except Exception as e:
             logger.error("Error in MainUiClass.filamentSensorHandler: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.filamentSensorHandler: {}".format(e), overlay=True)
-
-																			  
 
     ''' +++++++++++++++++++++++++++ Door Lock +++++++++++++++++++++++++++++++++++++ '''
 
@@ -989,24 +796,13 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         try:
             door_lock_disabled = False
             door_lock = False
-            # door_sensor = False
-            # door_lock_override = False
 
             if 'door_lock' in data:
                 door_lock_disabled = data["door_lock"] == "disabled"
                 door_lock = data["door_lock"] == 1
-            # if 'door_sensor' in data:
-            #     door_sensor = data["door_sensor"] == 1
-            # if 'door_lock_override' in data:
-            #     door_lock_override = data["door_lock_override"] == 1
-
-            # if self.dialog_doorlock:
-            #     self.dialog_doorlock.close()
-            #     self.dialog_doorlock = None
 
             self.doorLockButton.setVisible(not door_lock_disabled)
             if not door_lock_disabled:
-                # self.doorLockButton.setChecked(not door_lock)
                 self.doorLockButton.setText('Lock Door' if not door_lock else 'Unlock Door')
 
                 icon = 'doorLock' if not door_lock else 'doorUnlock'
@@ -1017,109 +813,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             logger.error("Error in MainUiClass.doorLockHandler: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.doorLockHandler: {}".format(e), overlay=True)
 
-    ''' +++++++++++++++++++++++++++ Firmware Update+++++++++++++++++++++++++++++++++++ '''
-    '''TODO: Need to modify this for updating cfg files instead of HEX used for updating Marlin'''
-    #
-    # isFirmwareUpdateInProgress = False
-    #
-    # def firmwareUpdateCheck(self):
-    #     logger.info("MainUiClass.firmwareUpdateCheck started")
-    #     try:
-    #         headers = {'X-Api-Key': apiKey}
-    #         requests.get('http://{}/plugin/JuliaFirmwareUpdater/update/check'.format(ip), headers=headers)
-    #     except Exception as e:
-    #         logger.error("Error in MainUiClass.firmwareUpdateCheck: {}".format(e))
-    #         dialog.WarningYesNo(self, "Error in MainUiClass.firmwareUpdateCheck: {}".format(e), overlay=True)
-    #
-    # def firmwareUpdateStart(self):
-    #     headers = {'X-Api-Key': apiKey}
-    #     requests.get('http://{}/plugin/JuliaFirmwareUpdater/update/start'.format(ip), headers=headers)
-    #
-    # def firmwareUpdateStartProgress(self):
-    #     self.stackedWidget.setCurrentWidget(self.firmwareUpdateProgressPage)
-    #     # self.firmwareUpdateLog.setTextColor(QtCore.Qt.yellow)
-    #     self.firmwareUpdateLog.setText("<span style='color: cyan'>Julia Firmware Updater<span>")
-    #     self.firmwareUpdateLog.append("<span style='color: cyan'>---------------------------------------------------------------</span>")
-    #     self.firmwareUpdateBackButton.setEnabled(False)
-    #
-    # def firmwareUpdateProgress(self, text, backEnabled=False):
-    #     self.stackedWidget.setCurrentWidget(self.firmwareUpdateProgressPage)
-    #     # self.firmwareUpdateLog.setTextColor(QtCore.Qt.yellow)
-    #     self.firmwareUpdateLog.append(str(text))
-    #     self.firmwareUpdateBackButton.setEnabled(backEnabled)
-    #
-    # def firmwareUpdateBack(self):
-    #     self.isFirmwareUpdateInProgress = False
-    #     self.firmwareUpdateBackButton.setEnabled(False)
-    #     self.stackedWidget.setCurrentWidget(self.homePage)
-    #
-    # def firmwareUpdateHandler(self, data):
-    #     if "type" not in data or data["type"] != "status":
-    #         return
-    #
-    #     if "status" not in data:
-    #         return
-    #
-    #     status = data["status"]
-    #     subtype = data["subtype"] if "subtype" in data else None
-    #
-    #     if status == "update_check":    # update check
-    #         if subtype == "error":  # notify error in ok diag
-    #             self.isFirmwareUpdateInProgress = False
-    #             if "message" in data:
-    #                 dialog.WarningOk(self, "Firmware Updater Error: " + str(data["message"]), overlay=True)
-    #         elif subtype == "success":
-    #             if dialog.SuccessYesNo(self, "Firmware update found.\nPress yes to update now!", overlay=True):
-    #                 self.isFirmwareUpdateInProgress = True
-    #                 self.firmwareUpdateStart()
-    #     elif status == "update_start":  # update started
-    #         if subtype == "success":    # update progress
-    #             self.isFirmwareUpdateInProgress = True
-    #             self.firmwareUpdateStartProgress()
-    #             if "message" in data:
-    #                 message = "<span style='color: yellow'>{}</span>".format(data["message"])
-    #                 self.firmwareUpdateProgress(message)
-    #         else:   # show error
-    #             self.isFirmwareUpdateInProgress = False
-    #             # self.firmwareUpdateProgress(data["message"] if "message" in data else "Unknown error!", backEnabled=True)
-    #             if "message" in data:
-    #                 dialog.WarningOk(self, "Firmware Updater Error: " + str(data["message"]), overlay=True)
-    #     elif status == "flasherror" or status == "progress":    # show software update dialog and update textview
-    #         if "message" in data:
-    #             message = "<span style='color: {}'>{}</span>".format("teal" if status == "progress" else "red", data["message"])
-    #             self.firmwareUpdateProgress(message, backEnabled=(status == "flasherror"))
-    #     elif status == "success":    # show ok diag to show done
-    #         self.isFirmwareUpdateInProgress = False
-    #         message = data["message"] if "message" in data else "Flash successful!"
-    #         message = "<span style='color: green'>{}</span>".format(message)
-    #         message = message + "<br/><br/><span style='color: white'>Press back to continue...</span>"
-    #         self.firmwareUpdateProgress(message, backEnabled=True)
-    #
-    # def getFirmwareVersion(self):
-    #     try:
-    #         headers = {'X-Api-Key': apiKey}
-    #         req = requests.get('http://{}/plugin/JuliaFirmwareUpdater/hardware/version'.format(ip), headers=headers)
-    #         data = req.json()
-    #         # print(data)
-    #         if req.status_code == requests.codes.ok:
-    #             info = u'\u2713' if not data["update_available"] else u"\u2717"    # icon
-    #             info += " Firmware: "
-    #             info += "Unknown" if not data["variant_name"] else data["variant_name"]
-    #             info += "\n"
-    #             if data["variant_name"]:
-    #                 info += "   Installed: "
-    #                 info += "Unknown" if not data["version_board"] else data["version_board"]
-    #             info += "\n"
-    #             info += "" if not data["version_repo"] else "   Available: " + data["version_repo"]
-    #             return info
-    #     except:
-    #         print("Error accessing /plugin/JuliaFirmwareUpdater/hardware/version")
-    #         pass
-    #     return u'\u2713' + "Firmware: Unknown\n"
-
     ''' +++++++++++++++++++++++++++++++++OTA Update+++++++++++++++++++++++++++++++++++ '''
-
-
 
     def displayVersionInfo(self):
         """
@@ -1131,15 +825,11 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             updateAvailable = False
             self.performUpdateButton.setDisabled(True)
 
-            # Firmware version on the MKS https://github.com/FracktalWorks/OctoPrint-JuliaFirmwareUpdater
-            # self.updateListWidget.addItem(self.getFirmwareVersion())
-
             data = octopiclient.getSoftwareUpdateInfo()
             if data:
                 for item in data["information"]:
-                    # print(item)
                     plugin = data["information"][item]
-                    info = u'\u2713' if not plugin["updateAvailable"] else u"\u2717"    # icon
+                    info = u'\u2713' if not plugin["updateAvailable"] else u"\u2717"
                     info += plugin["displayName"] + "  " + plugin["displayVersion"] + "\n"
                     info += "   Available: "
                     if "information" in plugin and "remote" in plugin["information"] and plugin["information"]["remote"]["value"] is not None:
@@ -1151,17 +841,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                     if plugin["updateAvailable"]:
                         updateAvailable = True
 
-                    # if not updatable:
-                    #     self.updateListWidget.addItem(u'\u2713' + data["information"][item]["displayName"] +
-                    #                                   "  " + data["information"][item]["displayVersion"] + "\n"
-                    #                                   + "   Available: " +
-                    #                                   )
-                    # else:
-                    #     updateAvailable = True
-                    #     self.updateListWidget.addItem(u"\u2717" + data["information"][item]["displayName"] +
-                    #                                   "  " + data["information"][item]["displayVersion"] + "\n"
-                    #                                   + "   Available: " +
-                    #                                   data["information"][item]["information"]["remote"]["value"])
             if updateAvailable:
                 self.performUpdateButton.setDisabled(False)
             self.stackedWidget.setCurrentWidget(self.OTAUpdatePage)
@@ -1243,7 +922,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             wlan0_config_file = io.open("/etc/wpa_supplicant/wpa_supplicant.conf", "r+", encoding='utf8')
             wlan0_config_file.truncate()
             ascii_ssid = self.wifiSettingsComboBox.currentText()
-            # unicode_ssid = ascii_ssid.decode('string_escape').decode('utf-8')
             wlan0_config_file.write(u"country=IN\n")
             wlan0_config_file.write(u"ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\n")
             wlan0_config_file.write(u"update_config=1\n")
@@ -1251,10 +929,8 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             wlan0_config_file.write(u'ssid="' + str(ascii_ssid) + '"\n')
             if self.hiddenCheckBox.isChecked():
                 wlan0_config_file.write(u'scan_ssid=1\n')
-            # wlan0_config_file.write(u"scan_ssid=1\n")
             if str(self.wifiPasswordLineEdit.text()) != "":
                 wlan0_config_file.write(u'psk="' + str(self.wifiPasswordLineEdit.text()) + '"\n')
-            # wlan0_config_file.write(u"key_mgmt=WPA-PSK\n")
             wlan0_config_file.write(u'}')
             wlan0_config_file.close()
             self.restartWifiThreadObject = ThreadRestartNetworking(ThreadRestartNetworking.WLAN)
@@ -1279,7 +955,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 self.wifiMessageBox.setLocalIcon('success.png')
                 self.wifiMessageBox.setText('Connected, IP: ' + x)
                 self.wifiMessageBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                self.ipStatus.setText(x) #sets the IP addr. in the status bar
+                self.ipStatus.setText(x)
 
             else:
                 self.wifiMessageBox.setText("Not able to connect to WiFi")
@@ -1321,12 +997,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.scan_wifi started")
         try:
-            # scanData = {}
-            # print "Scanning available wireless signals available to wlan0"
             scan_result = \
                 subprocess.Popen("iwlist wlan0 scan | grep 'ESSID'", stdout=subprocess.PIPE, shell=True).communicate()[0]
-            # Processing STDOUT into a dictionary that later will be converted to a json file later
-            scan_result = scan_result.decode('utf8').split('ESSID:')  # each ssid and pass from an item in a list ([ssid pass,ssid paas])
+            scan_result = scan_result.decode('utf8').split('ESSID:')
             scan_result = [s.strip() for s in scan_result]
             scan_result = [s.strip('"') for s in scan_result]
             scan_result = filter(None, scan_result)
@@ -1365,7 +1038,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         logger.info("MainUiClass.staticIPSettings started")
         try:
             self.stackedWidget.setCurrentWidget(self.staticIPSettingsPage)
-            #add "eth0" and "wlan0" to staticIPComboBox:
             self.staticIPComboBox.clear()
             self.staticIPComboBox.addItems(["eth0", "wlan0"])
         except Exception as e:
@@ -1391,10 +1063,8 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             if txtStaticIPNameServer is not "":
                 if self.isIpErr(txtStaticIPNameServer):
                     return self.showIpErr("NameServer")
-            Globaltxt = subprocess.Popen("cat /etc/dhcpcd.conf", stdout=subprocess.PIPE, shell=True).communicate()[
-                0].decode('utf8')
+            Globaltxt = subprocess.Popen("cat /etc/dhcpcd.conf", stdout=subprocess.PIPE, shell=True).communicate()[0].decode('utf8')
             staticIPConfig = ""
-            # using regex remove all lines staring with "interface" and "static" from txt
             Globaltxt = re.sub(r"interface.*\n", "", Globaltxt)
             Globaltxt = re.sub(r"static.*\n", "", Globaltxt)
             Globaltxt = re.sub(r"^\s+", "", Globaltxt)
@@ -1409,7 +1079,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 self.restartStaticIPThreadObject = ThreadRestartNetworking(ThreadRestartNetworking.ETH)
                 self.restartStaticIPThreadObject.signal.connect(self.staticIPReconnectResult)
                 self.restartStaticIPThreadObject.start()
-                # self.connect(self.restartStaticIPThreadObject, QtCore.SIGNAL(signal), self.staticIPReconnectResult)
                 self.staticIPMessageBox = dialog.dialog(self,
                                                         "Restarting networking, please wait...",
                                                         icon="exclamation-mark.png",
@@ -1433,9 +1102,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     def deleteStaticIPSettings(self):
         logger.info("MainUiClass.deleteStaticIPSettings started")
         try:
-            Globaltxt = subprocess.Popen("cat /etc/dhcpcd.conf", stdout=subprocess.PIPE, shell=True).communicate()[
-                0].decode('utf8')
-            # using regex remove all lines staring with "interface" and "static" from txt
+            Globaltxt = subprocess.Popen("cat /etc/dhcpcd.conf", stdout=subprocess.PIPE, shell=True).communicate()[0].decode('utf8')
             Globaltxt = re.sub(r"interface.*\n", "", Globaltxt)
             Globaltxt = re.sub(r"static.*\n", "", Globaltxt)
             Globaltxt = re.sub(r"^\s+", "", Globaltxt)
@@ -1474,7 +1141,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     def touchCalibration(self):
         logger.info("MainUiClass.touchCalibration started")
         try:
-            #os.system('sudo /home/pi/setenv.sh')
             os.system('sudo su')
             os.system('export TSLIB_TSDEVICE=/dev/input/event0')
             os.system('export TSLIB_FBDEVICE=/dev/fb0')
@@ -1482,84 +1148,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         except Exception as e:
             logger.error("Error in MainUiClass.touchCalibration: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.touchCalibration: {}".format(e), overlay=True)
-
-    # def showRotateDisplaySettingsPage(self):
-    #
-    #     txt = (subprocess.Popen("cat /boot/config.txt", stdout=subprocess.PIPE, shell=True).communicate()[0]).decode("utf-8")
-    #
-    #     reRot = r"dtoverlay\s*=\s*waveshare35a(\s*:\s*rotate\s*=\s*([0-9]{1,3})){0,1}"
-    #     mtRot = re.search(reRot, txt)
-    #     # print(mtRot.group(0))
-    #
-    #     if mtRot and len(mtRot.groups()) == 2 and str(mtRot.group(2)) == "270":
-    #         self.rotateDisplaySettingsComboBox.setCurrentIndex(1)
-    #     else:
-    #         self.rotateDisplaySettingsComboBox.setCurrentIndex(0)
-    #
-    #     self.stackedWidget.setCurrentWidget(self.rotateDisplaySettingsPage)
-
-    # def saveRotateDisplaySettings(self):
-    #     txt1 = (subprocess.Popen("cat /boot/config.txt", stdout=subprocess.PIPE, shell=True).communicate()[0]).decode("utf-8")
-    #
-    #     reRot = r"dtoverlay\s*=\s*waveshare35a(\s*:\s*rotate\s*=\s*([0-9]{1,3})){0,1}"
-    #     if self.rotateDisplaySettingsComboBox.currentIndex() == 1:
-    #         op1 = "dtoverlay=waveshare35a,rotate=270,fps=12,speed=16000000"
-    #     else:
-    #         op1 = "dtoverlay=waveshare35a,fps=12,speed=16000000"
-    #     res1 = re.sub(reRot, op1, txt1)
-    #
-    #     try:
-    #         file1 = open("/boot/config.txt", "w")
-    #         file1.write(res1)
-    #         file1.close()
-    #     except:
-    #         if dialog.WarningOk(self, "Failed to change rotation settings", overlay=True):
-    #             return
-    #
-    #     txt2 = (subprocess.Popen("cat /usr/share/X11/xorg.conf.d/99-calibration.conf", stdout=subprocess.PIPE,
-    #                             shell=True).communicate()[0]).decode("utf-8")
-    #
-    #     reTouch = r"Option\s+\"Calibration\"\s+\"([\d\s-]+)\""
-    #     if self.rotateDisplaySettingsComboBox.currentIndex() == 1:
-    #         op2 = "Option \"Calibration\"  \"3919 208 236 3913\""
-    #     else:
-    #         op2 = "Option \"Calibration\"  \"300 3932 3801 294\""
-    #     res2 = re.sub(reTouch, op2, txt2, flags=re.I)
-    #
-    #     try:
-    #         file2 = open("/usr/share/X11/xorg.conf.d/99-calibration.conf", "w")
-    #         file2.write(res2)
-    #         file2.close()
-    #     except:
-    #         if dialog.WarningOk(self, "Failed to change touch settings", overlay=True):
-    #             return
-    #
-    #     self.askAndReboot()
-    #     self.stackedWidget.setCurrentWidget(self.displaySettingsPage)
-
-    # def saveRotateDisplaySettings(self):
-    #     txt1 = (subprocess.Popen("cat /boot/config.txt", stdout=subprocess.PIPE, shell=True).communicate()[0]).decode("utf-8")
-    #
-    #     try:
-    #         if self.rotateDisplaySettingsComboBox.currentIndex() == 1:
-    #             os.system('sudo cp -f config/config.txt /boot/config.txt')
-    #         else:
-    #             os.system('sudo cp -f config/config_rot.txt /boot/config.txt')
-    #     except:
-    #         if dialog.WarningOk(self, "Failed to change rotation settings", overlay=True):
-    #             return
-    #     try:
-    #         if self.rotateDisplaySettingsComboBox.currentIndex() == 1:
-    #             os.system('sudo cp -f config/99-calibration.conf /usr/share/X11/xorg.conf.d/99-calibration.conf')
-    #         else:
-    #             os.system('sudo cp -f config/99-calibration_rot.conf /usr/share/X11/xorg.conf.d/99-calibration.conf')
-    #     except:
-    #         if dialog.WarningOk(self, "Failed to change touch settings", overlay=True):
-    #             return
-    #
-    #     self.askAndReboot()
-    #     self.stackedWidget.setCurrentWidget(self.displaySettingsPage)
-    #
 
     ''' +++++++++++++++++++++++++++++++++Change Filament+++++++++++++++++++++++++++++++ '''
 
@@ -1578,20 +1166,17 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.unloadFilament started")
         try:
-            # Move to the purge position for tool0
+# Move to the purge position for tool0
             if self.printerStatusText not in ["Printing", "Paused"]:
                 octopiclient.jog(tool0PurgePosition['X'], tool0PurgePosition["Y"], absolute=True, speed=10000)
 
-            # Set the tool0 temperature based on the selected filament
             if self.changeFilamentComboBox.findText("Loaded Filament") == -1:
                 octopiclient.setToolTemperature({"tool0": filaments[str(self.changeFilamentComboBox.currentText())]})
 
-            # Update the UI to show progress
             self.stackedWidget.setCurrentWidget(self.changeFilamentProgressPage)
             self.changeFilamentStatus.setText("Heating Tool 0, Please Wait...")
             self.changeFilamentNameOperation.setText("Unloading {}".format(str(self.changeFilamentComboBox.currentText())))
 
-            # Set flags for heating and unloading
             self.changeFilamentHeatingFlag = True
             self.loadFlag = False
         except Exception as e:
@@ -1606,20 +1191,16 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.loadFilament started")
         try:
-            # Move to the purge position for tool0
             if self.printerStatusText not in ["Printing", "Paused"]:
                 octopiclient.jog(tool0PurgePosition['X'], tool0PurgePosition["Y"], absolute=True, speed=10000)
 
-            # Set the tool0 temperature based on the selected filament
             if self.changeFilamentComboBox.findText("Loaded Filament") == -1:
                 octopiclient.setToolTemperature({"tool0": filaments[str(self.changeFilamentComboBox.currentText())]})
 
-            # Update the UI to show progress
             self.stackedWidget.setCurrentWidget(self.changeFilamentProgressPage)
             self.changeFilamentStatus.setText("Heating Tool 0, Please Wait...")
             self.changeFilamentNameOperation.setText("Loading {}".format(str(self.changeFilamentComboBox.currentText())))
 
-            # Set flags for heating and loading
             self.changeFilamentHeatingFlag = True
             self.loadFlag = True
         except Exception as e:
@@ -1684,7 +1265,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         logger.info("MainUiClass.changeFilamentRetractFunction started")
         try:
             self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
-            # Tip Shaping to prevent filament jamming in nozzle
+# Tip Shaping to prevent filament jamming in nozzle
             if self.changeFilamentComboBox.currentText() == "TPU":
                 octopiclient.gcode("G91")
                 octopiclient.gcode("G1 E10 F300")
@@ -1695,7 +1276,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 time.sleep(self.calcExtrudeTime(10, 600))
             octopiclient.gcode("G1 E-25 F6000")
             time.sleep(self.calcExtrudeTime(20, 6000))
-            time.sleep(8) #wait for filament to cool inside the nozzle
+            time.sleep(8)
             octopiclient.gcode("G1 E-150 F5000")
             time.sleep(self.calcExtrudeTime(150, 5000))
             octopiclient.gcode("G90")
@@ -1731,7 +1312,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.stackedWidget.setCurrentWidget(self.changeFilamentPage)
             self.changeFilamentComboBox.clear()
             self.changeFilamentComboBox.addItems(filaments.keys())
-            #Update
             print(self.tool0TargetTemperature)
             if self.tool0TargetTemperature  and self.printerStatusText in ["Printing","Paused"]:
                 self.changeFilamentComboBox.addItem("Loaded Filament")
@@ -1801,8 +1381,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
             self.fileListWidget.clear()
             files.sort(key=lambda d: d['date'], reverse=True)
-            # for item in [f['name'] for f in files] :
-            #     self.fileListWidget.addItem(item)
             self.fileListWidget.addItems([f['name'] for f in files])
             self.fileListWidget.setCurrentRow(0)
         except Exception as e:
@@ -1822,8 +1400,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             files = subprocess.Popen("ls /media/usb0 | grep gcode", stdout=subprocess.PIPE, shell=True).communicate()[0]
             files = files.decode('utf-8').split('\n')
             files = filter(None, files)
-            # for item in files:
-            #     self.fileListWidgetUSB.addItem(item)
             self.fileListWidgetUSB.addItems(files)
             self.fileListWidgetUSB.setCurrentRow(0)
         except Exception as e:
@@ -1869,13 +1445,8 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                     "%.2f mm" % file['gcodeAnalysis']['filament']['tool0']['length'])
             except KeyError:
                 self.filamentLengthFileSelected.setText('-')
-            # uncomment to select the file when selectedd in list
-            # octopiclient.selectFile(self.fileListWidget.currentItem().text(), False)
             self.stackedWidget.setCurrentWidget(self.printSelectedLocalPage)
 
-            '''
-            If image is available from server, set it, otherwise display default image
-            '''
             self.displayThumbnail(self.printPreviewSelected, str(self.fileListWidget.currentItem().text()), usb=False)
 
         except Exception as e:
@@ -1939,7 +1510,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         try:
             octopiclient.deleteFile(self.fileListWidget.currentItem().text())
             octopiclient.deleteFile(self.fileListWidget.currentItem().text().replace(".gcode", ".png"))
-            # delete PNG also
             self.fileListLocal()
         except Exception as e:
             logger.error("Error in MainUiClass.deleteItem: {}".format(e))
@@ -2001,7 +1571,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         :param temperature: dict containing key:value pairs with keys being the tools, bed and their values being their corresponding temperatures
         """
         try:
-            # Update tool0 temperature
             if temperature['tool0Target'] == 0:
                 self.tool0TempBar.setMaximum(300)
                 self.tool0TempBar.setStyleSheet(styles.bar_heater_cold)
@@ -2014,7 +1583,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.tool0ActualTemperature.setText(str(int(temperature['tool0Actual'])))
             self.tool0TargetTemperature.setText(str(int(temperature['tool0Target'])))
 
-            # Update bed temperature
             if temperature['bedTarget'] == 0:
                 self.bedTempBar.setMaximum(150)
                 self.bedTempBar.setStyleSheet(styles.bar_heater_cold)
@@ -2027,7 +1595,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.bedActualTemperatute.setText(str(int(temperature['bedActual'])))
             self.bedTargetTemperature.setText(str(int(temperature['bedTarget'])))
 
-            # Update the progress bar on the change filament screen
             if self.changeFilamentHeatingFlag:
                 if temperature['tool0Target'] == 0:
                     self.changeFilamentProgress.setMaximum(300)
@@ -2039,7 +1606,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                     if self.loadFlag:
                         self.changeFilamentLoadFunction()
                     else:
-                        octopiclient.extrude(5)  # Extrudes some amount of filament to prevent plugging
+                        octopiclient.extrude(5)
                         self.changeFilamentRetractFunction()
                 self.changeFilamentProgress.setValue(temperature['tool0Actual'])
 
@@ -2062,10 +1629,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 self.fileName.setText("-")
                 self.printProgressBar.setValue(0)
                 self.printTime.setText("-")
-                self.playPauseButton.setDisabled(True)  # if file available, make play buttom visible
+                self.playPauseButton.setDisabled(True)
 
             else:
-                self.playPauseButton.setDisabled(False)  # if file available, make play buttom visible
+                self.playPauseButton.setDisabled(False)
                 self.fileName.setText(file['job']['file']['name'])
                 self.currentFile = file['job']['file']['name']
                 if file['progress']['printTime'] is None:
@@ -2089,10 +1656,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 else:
                     self.printProgressBar.setValue(file['progress']['completion'])
 
-                '''
-                If image is available from server, set it, otherwise display default image.
-                If the image was already loaded, dont load it again.
-                '''
                 if self.currentImage != self.currentFile:
                     self.currentImage = self.currentFile
                     self.displayThumbnail(self.printPreviewMain, self.currentFile, usb=False)
@@ -2110,18 +1673,15 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.printerStatusText = status
             self.printerStatus.setText(status)
 
-            if status == "Printing":  # Green
+            if status == "Printing":
                 self.printerStatusColour.setStyleSheet(styles.printer_status_green)
-            elif status == "Offline":  # Red
+            elif status == "Offline":
                 self.printerStatusColour.setStyleSheet(styles.printer_status_red)
-            elif status == "Paused":  # Amber
+            elif status == "Paused":
                 self.printerStatusColour.setStyleSheet(styles.printer_status_amber)
-            elif status == "Operational":  # Amber
+            elif status == "Operational":
                 self.printerStatusColour.setStyleSheet(styles.printer_status_blue)
 
-            '''
-            Depending on Status, enable and Disable Buttons
-            '''
             if status == "Printing":
                 self.playPauseButton.setChecked(True)
                 self.stopButton.setDisabled(False)
@@ -2130,9 +1690,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 self.menuCalibrateButton.setDisabled(True)
                 self.menuPrintButton.setDisabled(True)
                 self.doorLockButton.setDisabled(False)
-                # if not self.__timelapse_enabled:
-                #     octopiclient.cancelPrint()
-                #     self.coolDownAction()
 
             elif status == "Paused":
                 self.playPauseButton.setChecked(False)
@@ -2158,14 +1715,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     ''' ++++++++++++++++++++++++++++Active Extruder/Tool Change++++++++++++++++++++++++ '''
 
-
     def selectToolChangeFilament(self):
         """
         Selects the tool for filament change. Simplified for single extruder setup.
         """
         logger.info("MainUiClass.selectToolChangeFilament started")
         try:
-            # Always set the active extruder to tool0 for single extruder setup
             self.setActiveExtruder(0)
             octopiclient.selectTool(0)
             octopiclient.jog(tool0PurgePosition['X'], tool0PurgePosition["Y"], absolute=True, speed=10000)
@@ -2174,45 +1729,14 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             logger.error("Error in MainUiClass.selectToolChangeFilament: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.selectToolChangeFilament: {}".format(e), overlay=True)
 
-    def selectToolMotion(self):
-        """
-        Selects the tool whose temperature needs to be changed. It accordingly changes the button text. it also updates the status of the other toggle buttons
-        """
-        logger.info("MainUiClass.selectToolMotion started")
-        try:
-            if self.toolToggleMotionButton.isChecked():
-                self.setActiveExtruder(1)
-                octopiclient.selectTool(1)
-
-            else:
-                self.setActiveExtruder(0)
-                octopiclient.selectTool(0)
-        except Exception as e:
-            logger.error("Error in MainUiClass.selectToolMotion: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.selectToolMotion: {}".format(e), overlay=True)
-
-    def selectToolTemperature(self):
-        """
-        Selects the tool whose temperature needs to be changed. Simplified for single extruder setup.
-        """
-        logger.info("MainUiClass.selectToolTemperature started")
-        try:
-            # Always set the temperature spinbox to tool0's target temperature for single extruder setup
-            self.toolTempSpinBox.setProperty("value", float(self.tool0TargetTemperature.text()))
-        except Exception as e:
-            logger.error("Error in MainUiClass.selectToolTemperature: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.selectToolTemperature: {}".format(e), overlay=True)
-
     def setActiveExtruder(self, activeNozzle):
         """
         Sets the active extruder, and changes the UI accordingly. Simplified for single extruder setup.
         """
         logger.info("MainUiClass.setActiveExtruder started")
         try:
-            # Always set the active extruder to tool0 for single extruder setup
             self.tool0Label.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/activeNozzle.png")))
             self.toolToggleChangeFilamentButton.setChecked(False)
-          # self.toolToggleChangeFilamentButton.setText("0")
             self.toolToggleMotionButton.setChecked(False)
             self.toolToggleMotionButton.setText("0")
             self.activeExtruder = 0
@@ -2229,10 +1753,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         logger.info("MainUiClass.control started")
         try:
             self.stackedWidget.setCurrentWidget(self.controlPage)
-            if self.toolToggleTemperatureButton.isChecked():
-                self.toolTempSpinBox.setProperty("value", float(self.tool1TargetTemperature.text()))
-            else:
-                self.toolTempSpinBox.setProperty("value", float(self.tool0TargetTemperature.text()))
+            self.toolTempSpinBox.setProperty("value", float(self.tool0TargetTemperature.text()))
             self.bedTempSpinBox.setProperty("value", float(self.bedTargetTemperature.text()))
         except Exception as e:
             logger.error("Error in MainUiClass.control: {}".format(e))
@@ -2271,7 +1792,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.setToolTemp started")
         try:
-            # Set the temperature for tool0
             octopiclient.gcode(command='M104 T0 S' + str(self.toolTempSpinBox.value()))
         except Exception as e:
             logger.error("Error in MainUiClass.setToolTemp: {}".format(e))
@@ -2284,7 +1804,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.preheatToolTemp started")
         try:
-            # Set the temperature for tool0
             octopiclient.gcode(command='M104 T0 S' + str(temp))
             self.toolTempSpinBox.setProperty("value", temp)
         except Exception as e:
@@ -2310,16 +1829,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.coolDownAction started")
         try:
-            # Turn off the fan
             octopiclient.gcode(command='M107')
-            
-            # Set tool0 temperature to 0
             octopiclient.setToolTemperature({"tool0": 0})
-            
-            # Set bed temperature to 0
             octopiclient.setBedTemperature(0)
-            
-            # Update UI elements
             self.toolTempSpinBox.setProperty("value", 0)
             self.bedTempSpinBox.setProperty("value", 0)
         except Exception as e:
@@ -2351,15 +1863,15 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         #TODO can make this simpler, asset the offset value to string float to begin with instead of doing confitionals
         """
         logger.info("MainUiClass.setZToolOffset started")
-        self.currentZPosition = offset #gets the current z position, used to set new tool offsets.
+        self.currentZPosition = offset
         try:
             if self.setNewToolZOffsetFromCurrentZBool:
                 print(self.toolOffsetZ)
                 print(self.currentZPosition)
                 newToolOffsetZ = (float(self.toolOffsetZ) + float(self.currentZPosition))
-                octopiclient.gcode(command='M218 T1 Z{}'.format(newToolOffsetZ))  # restore eeprom settings to get Z home offset, mesh bed leveling back
+                octopiclient.gcode(command='M218 T1 Z{}'.format(newToolOffsetZ))
                 self.setNewToolZOffsetFromCurrentZBool =False
-                octopiclient.gcode(command='SAVE_CONFIG')  # store eeprom settings to get Z home offset
+                octopiclient.gcode(command='SAVE_CONFIG')
         except Exception as e:
             logger.error("Error in MainUiClass.setZToolOffset: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.setZToolOffset: {}".format(e), overlay=True)
@@ -2436,10 +1948,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.setZProbeOffset started")
         try:
-            octopiclient.gcode(command='M851 Z{}'.format(round(float(offset),2))) #M851 only ajusts nozzle offset
+            octopiclient.gcode(command='M851 Z{}'.format(round(float(offset),2)))
             self.nozzleOffsetDoubleSpinBox.setValue(0)
             _offset=float(self.currentNozzleOffset.text())+float(offset)
-            self.currentNozzleOffset.setText(str(float(self.currentNozzleOffset.text())-float(offset))) # show nozzle offset after adjustment
+            self.currentNozzleOffset.setText(str(float(self.currentNozzleOffset.text())-float(offset)))
             octopiclient.gcode(command='M500')
         except Exception as e:
             logger.error("Error in MainUiClass.setZProbeOffset: {}".format(e))
@@ -2492,7 +2004,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     def setToolOffsetX(self):
         logger.info("MainUiClass.setToolOffsetX started")
         try:
-            octopiclient.gcode(command='M218 T1 X{}'.format(round(self.toolOffsetXDoubleSpinBox.value(),2)))  # restore eeprom settings to get Z home offset, mesh bed leveling back
+            octopiclient.gcode(command='M218 T1 X{}'.format(round(self.toolOffsetXDoubleSpinBox.value(),2)))
             octopiclient.gcode(command='M500')
         except Exception as e:
             logger.error("Error in MainUiClass.setToolOffsetX: {}".format(e))
@@ -2501,7 +2013,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     def setToolOffsetY(self):
         logger.info("MainUiClass.setToolOffsetY started")
         try:
-            octopiclient.gcode(command='M218 T1 Y{}'.format(round(self.toolOffsetYDoubleSpinBox.value(),2)))  # restore eeprom settings to get Z home offset, mesh bed leveling back
+            octopiclient.gcode(command='M218 T1 Y{}'.format(round(self.toolOffsetYDoubleSpinBox.value(),2)))
             octopiclient.gcode(command='M500')
             octopiclient.gcode(command='M500')
         except Exception as e:
@@ -2511,7 +2023,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     def setToolOffsetZ(self):
         logger.info("MainUiClass.setToolOffsetZ started")
         try:
-            octopiclient.gcode(command='M218 T1 Z{}'.format(round(self.toolOffsetZDoubleSpinBox.value(),2)))  # restore eeprom settings to get Z home offset, mesh bed leveling back
+            octopiclient.gcode(command='M218 T1 Z{}'.format(round(self.toolOffsetZDoubleSpinBox.value(),2)))
             octopiclient.gcode(command='M500')
         except Exception as e:
             logger.error("Error in MainUiClass.setToolOffsetZ: {}".format(e))
@@ -2520,7 +2032,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
     def getToolOffset(self, M218Data):
         logger.info("MainUiClass.getToolOffset started")
         try:
-            #if float(M218Data[M218Data.index('X') + 1:].split(' ', 1)[0] ) > 0:
             self.toolOffsetZ = M218Data[M218Data.index('Z') + 1:].split(' ', 1)[0]
             self.toolOffsetX = M218Data[M218Data.index('X') + 1:].split(' ', 1)[0]
             self.toolOffsetY = M218Data[M218Data.index('Y') + 1:].split(' ', 1)[0]
@@ -2540,8 +2051,8 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.quickStep1 started")
         try:
-            octopiclient.gcode(command='M104 S200')  # Heat tool0
-            octopiclient.gcode(command='M420 S0')  # Disable mesh bed leveling
+            octopiclient.gcode(command='M104 S200')
+            octopiclient.gcode(command='M420 S0')
             self.stackedWidget.setCurrentWidget(self.quickStep1Page)
             octopiclient.home(['x', 'y', 'z'])
             octopiclient.jog(x=40, y=40, absolute=True, speed=2000)
@@ -2627,13 +2138,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 octopiclient.jog(x=calibrationPosition['X4'], y=calibrationPosition['Y4'], absolute=True, speed=10000)
                 octopiclient.jog(z=1, absolute=True, speed=1500)
                 self.toolZOffsetCaliberationPageCount = 1
-            elif self.toolZOffsetCaliberationPageCount == 1:
-                self.toolZOffsetLabel.setText("Move the bed up or down to the Second Nozzle , testing height using paper")
-                octopiclient.gcode(command='G92 Z0')#set the current Z position to zero
-                octopiclient.jog(z=1, absolute=True, speed=1500)
-                octopiclient.gcode(command='T1')
-                octopiclient.jog(x=calibrationPosition['X4'], y=calibrationPosition['Y4'], absolute=True, speed=10000)
-                self.toolZOffsetCaliberationPageCount = 2
             else:
                 self.doneStep()
         except Exception as e:
@@ -2652,26 +2156,20 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.doneStep started")
         try:
-            # Set the flag to update Z offset
             self.setNewToolZOffsetFromCurrentZBool = True
 
-            # Get the current position and save it
             octopiclient.gcode(command='M114')
             octopiclient.jog(z=4, absolute=True, speed=1500)
 
-            # Ensure tool0 is active
             octopiclient.gcode(command='T0')
 
-            # Home all axes
             self.stackedWidget.setCurrentWidget(self.calibratePage)
             octopiclient.home(['x', 'y', 'z'])
 
-            # Turn off heaters and motors
-            octopiclient.gcode(command='M104 S0')  # Turn off tool0 heater
-            octopiclient.gcode(command='M84')  # Disable motors
+            octopiclient.gcode(command='M104 S0')
+            octopiclient.gcode(command='M84')
 
-            # Save settings to EEPROM
-            octopiclient.gcode(command='M500')  # Save Z offset and other settings
+            octopiclient.gcode(command='M500')
         except Exception as e:
             logger.error("Error in MainUiClass.doneStep: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.doneStep: {}".format(e), overlay=True)
@@ -2688,19 +2186,15 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.cancelStep started")
         try:
-            # Reset the UI to the calibration page
             self.stackedWidget.setCurrentWidget(self.calibratePage)
 
-            # Home all axes
             octopiclient.home(['x', 'y', 'z'])
 
-            # Turn off the tool0 heater
             octopiclient.gcode(command='M104 S0')
 
-            # Disable motors
             octopiclient.gcode(command='M84')
 
-            # Stop any running animations
+# Stop any running animations
             try:
                 self.movie1.stop()
                 self.movie2.stop()
@@ -2718,29 +2212,19 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 pass
 
     
-    def testPrint(self,tool0Diameter,tool1Diameter,gcode):
+    def testPrint(self,tool0Diameter,gcode):
         """
         Prints a test print
         :param tool0Diameter: Diameter of tool 0 nozzle.04,06 or 08
-        :param tool1Diameter: Diameter of tool 1 nozzle.40,06 or 08
-        :param gcode: type of gcode to print, dual nozzle calibration, bed leveling, movement or samaple prints in
-        single and dual. bedLevel, dualCalibration, movementTest, dualTest, singleTest
+        :param gcode: type of gcode to print, bed leveling, movement or sample prints in single. bedLevel, movementTest, singleTest
         :return:
         """
         logger.info("MainUiClass.testPrint started")
         try:
             if gcode is 'bedLevel':
                 self.printFromPath('gcode/' + tool0Diameter + '_BedLeveling.gcode', True)
-            elif gcode is 'dualCalibration':
-                self.printFromPath(
-                    'gcode/' + tool0Diameter + '_' + tool1Diameter + '_dual_extruder_calibration_Idex.gcode',
-                    True)
             elif gcode is 'movementTest':
                 self.printFromPath('gcode/movementTest.gcode', True)
-            elif gcode is 'dualTest':
-                self.printFromPath(
-                    'gcode/' + tool0Diameter + '_' + tool1Diameter + '_Fracktal_logo_Idex.gcode',
-                    True)
             elif gcode is 'singleTest':
                 self.printFromPath('gcode/' + tool0Diameter + '_Fracktal_logo_Idex.gcode',True)
 
@@ -2764,184 +2248,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         except Exception as e:
             logger.error("Error in MainUiClass.printFromPath: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.printFromPath: {}".format(e), overlay=True)
-
-
-    ''' +++++++++++++++++++++++++++++++++++IDEX Config++++++++++++++++++++++++++++++++ '''
-
-
-    def idexConfigStep1(self):
-        """
-        Shows welcome message.
-        Welcome Page, Give Info. Unlock nozzle and push down
-        :return:
-        """
-        logger.info("MainUiClass.idexConfigStep1 started")
-        try:
-            octopiclient.gcode(command='M503')  # Gets old tool offset position
-            octopiclient.gcode(command='M218 T1 Z0')  # set nozzle tool offsets to 0
-            octopiclient.gcode(command='M104 S200')
-            octopiclient.gcode(command='M104 T1 S200')
-            octopiclient.home(['x', 'y', 'z'])
-            octopiclient.gcode(command='G1 X10 Y10 Z20 F5000')
-            octopiclient.gcode(command='T0')  # Set active tool to t0
-            octopiclient.gcode(command='M420 S0')  # Dissable mesh bed leveling for good measure
-            self.stackedWidget.setCurrentWidget(self.idexConfigStep1Page)
-            self.movie5 = QtGui.QMovie("templates/img/Calibration/Nozzlelevel1.gif")
-            self.Nozzlelevel1.setMovie(self.movie5)
-            self.movie5.start()
-        except Exception as e:
-            logger.error("Error in MainUiClass.idexConfigStep1: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.idexConfigStep1: {}".format(e), overlay=True)
-            try:
-                self.movie5.stop()
-            except:
-                pass
-
-    def idexConfigStep2(self):
-        """
-        levels first position (RIGHT)
-        :return:
-        """
-        logger.info("MainUiClass.idexConfigStep2 started")
-        try:
-            self.stackedWidget.setCurrentWidget(self.idexConfigStep2Page)
-            octopiclient.jog(x=calibrationPosition['X1'], y=calibrationPosition['Y1'], absolute=True, speed=10000)
-            octopiclient.jog(z=0, absolute=True, speed=1500)
-            self.movie5.stop()
-            self.movie6 = QtGui.QMovie("templates/img/Calibration/CalibrationPoint1.gif")
-            self.CalibrationPoint1_2.setMovie(self.movie6)
-            self.movie6.start()
-        except Exception as e:
-            logger.error("Error in MainUiClass.idexConfigStep2: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.idexConfigStep2: {}".format(e), overlay=True)
-            try:
-                self.movie5.stop()
-                self.movie6.stop()
-            except:
-                pass
-
-
-    def idexConfigStep3(self):
-        """
-        levels second leveling position (LEFT)
-        """
-        logger.info("MainUiClass.idexConfigStep3 started")
-        try:
-            self.stackedWidget.setCurrentWidget(self.idexConfigStep3Page)
-            octopiclient.jog(z=10, absolute=True, speed=1500)
-            octopiclient.jog(x=calibrationPosition['X2'], y=calibrationPosition['Y2'], absolute=True, speed=10000)
-            octopiclient.jog(z=0, absolute=True, speed=1500)
-            self.movie6.stop()
-            self.movie7 = QtGui.QMovie("templates/img/Calibration/CalibrationPoint2.gif")
-            self.CalibrationPoint2_2.setMovie(self.movie7)
-            self.movie7.start()
-        except Exception as e:
-            logger.error("Error in MainUiClass.idexConfigStep3: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.idexConfigStep3: {}".format(e), overlay=True)
-            try:
-                self.movie6.stop()
-                self.movie7.stop()
-            except:
-                pass
-
-    def idexConfigStep4(self):
-        """
-        Set to Mirror mode and asks to loosen the carriage, push both doen to max
-        :return:
-        """
-        logger.info("MainUiClass.idexConfigStep4 started")
-        try:
-            self.stackedWidget.setCurrentWidget(self.idexConfigStep4Page)
-            octopiclient.jog(z=10, absolute=True, speed=1500)
-            octopiclient.gcode(command='M605 S3')
-            octopiclient.jog(x=calibrationPosition['X1'], y=calibrationPosition['Y1'], absolute=True, speed=10000)
-            self.movie7.stop()
-            self.movie8 = QtGui.QMovie("templates/img/Calibration/NozzleLevelNew1.gif")
-            self.Nozzlelevel1_2.setMovie(self.movie8)
-            self.movie8.start()
-        except Exception as e:
-            logger.error("Error in MainUiClass.idexConfigStep4: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.idexConfigStep4: {}".format(e), overlay=True)
-            try:
-                self.movie7.stop()
-                self.movie8.stop()
-            except:
-                pass
-
-
-    def idexConfigStep5(self):
-        """
-        take bed up until both nozzles touch the bed. ASk to take nozzle up and down till nozzle just rests on the bed and tighten
-        :return:
-        """
-        logger.info("MainUiClass.idexConfigStep5 started")
-        try:
-            self.stackedWidget.setCurrentWidget(self.idexConfigStep5Page)
-            octopiclient.jog(z=1, absolute=True, speed=10000)
-            self.movie8.stop()
-            self.movie9 = QtGui.QMovie("templates/img/Calibration/NozzlelevelNew2.gif")
-            self.Nozzlelevel2.setMovie(self.movie9)
-            self.movie9.start()
-        except Exception as e:
-            logger.error("Error in MainUiClass.idexConfigStep5: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.idexConfigStep5: {}".format(e), overlay=True)
-            try:
-                self.movie8.stop()
-                self.movie9.stop()
-            except:
-                pass
-
-
-
-    def idexDoneStep(self):
-        """
-        Exits leveling
-        :return:
-        """
-        logger.info("MainUiClass.idexDoneStep started")
-        try:
-            octopiclient.jog(z=4, absolute=True, speed=1500)
-            self.stackedWidget.setCurrentWidget(self.calibratePage)
-            self.movie9.stop()
-            octopiclient.home(['z'])
-            octopiclient.home(['x', 'y'])
-            octopiclient.gcode(command='M104 S0')
-            octopiclient.gcode(command='M104 T1 S0')
-            octopiclient.gcode(command='M605 S1')
-            octopiclient.gcode(command='M218 T1 Z0') #set nozzle offsets to 0
-            octopiclient.gcode(command='M84')
-            octopiclient.gcode(command='M500')  # store eeprom settings to get Z home offset, mesh bed leveling back
-        except Exception as e:
-            logger.error("Error in MainUiClass.idexDoneStep: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.idexDoneStep: {}".format(e), overlay=True)
-            try:
-                self.movie9.stop()
-            except:
-                pass
-
-    def idexCancelStep(self):
-        logger.info("MainUiClass.idexCancelStep started")
-        try:
-            self.stackedWidget.setCurrentWidget(self.calibratePage)
-            try:
-                self.movie5.stop()
-                self.movie6.stop()
-                self.movie7.stop()
-                self.movie8.stop()
-                self.movie9.stop()
-            except:
-                pass
-            octopiclient.gcode(command='M605 S1')
-            octopiclient.home(['z'])
-            octopiclient.home(['x', 'y'])
-            octopiclient.gcode(command='M104 S0')
-            octopiclient.gcode(command='M104 T1 S0')
-            octopiclient.gcode(command='M218 T1 Z{}'.format(self.idexToolOffsetRestoreValue))
-            octopiclient.gcode(command='M84')
-        except Exception as e:
-            logger.error("Error in MainUiClass.idexCancelStep: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.idexCancelStep: {}".format(e), overlay=True)
-
 
     ''' +++++++++++++++++++++++++++++++++++Keyboard++++++++++++++++++++++++++++++++ '''
 
@@ -2985,22 +2291,13 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             if dialog.WarningYesNo(self, "Are you sure you want to restore default print settings?\nWarning: Doing so will erase offsets and bed leveling info",
                                    overlay=True):
                 os.system('sudo cp -f firmware/FILAMENT_SENSOR_DRAGON.cfg /home/pi/FILAMENT_SENSOR_DRAGON.cfg')
-                os.system('sudo cp -f firmware/FILAMENT_SENSOR_TWINDRAGON.cfg /home/pi/FILAMENT_SENSOR_TWINDRAGON.cfg')
                 os.system('sudo cp -f firmware/COMMON_GCODE_MACROS.cfg /home/pi/COMMON_GCODE_MACROS.cfg')
-                os.system('sudo cp -f firmware/IDEX_TWINDRAGON.cfg /home/pi/IDEX_TWINDRAGON.cfg')
                 os.system('sudo cp -f firmware/MOTHERBOARD_DRAGON.cfg /home/pi/MOTHERBOARD_DRAGON.cfg')
-                os.system('sudo cp -f firmware/MOTHERBOARD_TWINDRAGON.cfg /home/pi/MOTHERBOARD_TWINDRAGON.cfg')
                 os.system('sudo cp -f firmware/PRINTERS_DRAGON_400x300.cfg /home/pi/PRINTERS_DRAGON_400x300.cfg')
                 os.system('sudo cp -f firmware/PRINTERS_DRAGON_500x400.cfg /home/pi/PRINTERS_DRAGON_500x400.cfg')
-                os.system('sudo cp -f firmware/PRINTERS_DRAGON_700x600.cfg /home/pi/PRINTERS_TWINDRAGON_700x600.cfg')
-                os.system('sudo cp -f firmware/PRINTERS_TWINDRAGON_300x300.cfg /home/pi/PRINTERS_TWINDRAGON_300x300.cfg')
-                os.system('sudo cp -f firmware/PRINTERS_TWINDRAGON_400x400.cfg /home/pi/PRINTERS_TWINDRAGON_400x400.cfg')
-                os.system('sudo cp -f firmware/PRINTERS_TWINDRAGON_600x600.cfg /home/pi/PRINTERS_TWINDRAGON_600x600.cfg')
-                os.system('sudo cp -f firmware/PRINTERS_TWINDRAGON_600x300.cfg /home/pi/PRINTERS_TWINDRAGON_600x300.cfg')
+                os.system('sudo cp -f firmware/PRINTERS_DRAGON_700x600.cfg /home/pi/PRINTERS_DRAGON_700x600.cfg')
                 os.system('sudo cp -f firmware/TOOLHEADS_TD-01_TOOLHEAD0.cfg /home/pi/TOOLHEADS_TD-01_TOOLHEAD0.cfg')
-                os.system('sudo cp -f firmware/TOOLHEADS_TD-01_TOOLHEAD1.cfg /home/pi/TOOLHEADS_TD-01_TOOLHEAD1.cfg')
                 os.system('sudo cp -f firmware/variables.cfg /home/pi/variables.cfg')
-                #TODO: check printer variant setting and modify printer.cfg accordingly
                 octopiclient.gcode(command='M502')
                 octopiclient.gcode(command='M500')
                 octopiclient.gcode(command='FIRMWARE_RESTART')
@@ -3028,7 +2325,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         Checks for valid printer.cfg and restores if needed
         """
 
-        # Open the printer.cfg file:
         logger.info("MainUiClass.checkKlipperPrinterCFG started")
         try:
             try:
@@ -3062,7 +2358,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                                 return()
                             except:
                                 pass
-                # If no valid backups found, show error dialog:
+# If no valid backups found, show error dialog:
                 dialog.WarningOk(self, "Printer Config File corrupted. Contact Fracktal support or raise a ticket at care.fracktal.in")
                 if self.printerStatus == "Printing":
                     octopiclient.cancelPrint()
@@ -3126,9 +2422,9 @@ class QtWebsocket(QtCore.QThread):
         self.heartbeat_timer = None
         try:
             url = "ws://{}/sockjs/{:0>3d}/{}/websocket".format(
-                ip,  # host + port + prefix, but no protocol
-                random.randrange(0, stop=999),  # server_id
-                uuid.uuid4()  # session_id
+                ip,
+                random.randrange(0, stop=999),
+                uuid.uuid4()
             )
 
             self.ws = websocket.WebSocketApp(url,
@@ -3151,7 +2447,7 @@ class QtWebsocket(QtCore.QThread):
             if self.heartbeat_timer is not None:
                 self.heartbeat_timer.cancel()
 
-            self.heartbeat_timer = threading.Timer(120, self.reestablish_connection)  # 120 seconds = 2 minutes
+            self.heartbeat_timer = threading.Timer(120, self.reestablish_connection)
             self.heartbeat_timer.start()
         except Exception as e:
             logger.error("Error in QtWebsocket.reset_heartbeat_timer: {}".format(e))
@@ -3174,17 +2470,16 @@ class QtWebsocket(QtCore.QThread):
     def authenticate(self):
         logger.info("QtWebsocket.authenticate started")
         try:
-            # perform passive login to retrieve username and session key for API key
             url = 'http://' + ip + '/api/login'
             headers = {'content-type': 'application/json', 'X-Api-Key': apiKey}
             payload = {"passive": True}
             response = requests.post(url, data=json.dumps(payload), headers=headers)
             data = response.json()
 
-            # prepare auth payload
+# prepare auth payload
             auth_message = {"auth": "{name}:{session}".format(**data)}
 
-            # send it
+# send it
             self.send(auth_message)
         except Exception as e:
             logger.error("Error in QtWebsocket.authenticate: {}".format(e))
@@ -3192,14 +2487,14 @@ class QtWebsocket(QtCore.QThread):
     def on_message(self, ws, message):
         message_type = message[0]
         if message_type == "h":
-            # "heartbeat" message
+# "heartbeat" message
             self.reset_heartbeat_timer()
             return
         elif message_type == "o":
-            # "open" message
+# "open" message
             return
         elif message_type == "c":
-            # "close" message
+# "close" message
             return
 
         message_body = message[1:]
@@ -3230,13 +2525,7 @@ class QtWebsocket(QtCore.QThread):
                     self.connected_signal.emit()
                     print("connected")
             if "plugin" in data:
-                # if data["plugin"]["plugin"] == 'Julia2018FilamentSensor':
-                #      self.filament_sensor_triggered_signal.emit(data["plugin"]["data"])
-
-                if data["plugin"]["plugin"] == 'JuliaFirmwareUpdater':
-                    self.firmware_updater_signal.emit(data["plugin"]["data"])
-
-                elif data["plugin"]["plugin"] == 'softwareupdate':
+                if data["plugin"]["plugin"] == 'softwareupdate':
                     if data["plugin"]["data"]["type"] == "updating":
                         self.update_started_signal.emit(data["plugin"]["data"]["data"])
                     elif data["plugin"]["data"]["type"] == "loglines":
@@ -3249,42 +2538,31 @@ class QtWebsocket(QtCore.QThread):
             if "current" in data:
                 if data["current"]["messages"]:
                     for item in data["current"]["messages"]:
-                        if 'Filament Runout or clogged' in item: # "Filament Runout on T0/T1"
+                        if 'Filament Runout or clogged' in item:
                             self.filament_sensor_triggered_signal.emit(item[item.index('T') + 1:].split(' ', 1)[0])
 
                         if 'Primary FS Status' in item:
                             self.filament_sensor_triggered_signal.emit(item)
 
-                        if 'M206' in item: #response to M503, send current Z offset value
+                        if 'M206' in item:
                             self.z_home_offset_signal.emit(item[item.index('Z') + 1:].split(' ', 1)[0])
-                        # if 'Count' in item:  # gets the current Z value, uses it to set Z offset
-                        #     self.emit(QtCore.SIGNAL('SET_Z_HOME_OFFSET'), item[item.index('Z') + 2:].split(' ', 1)[0],
-                        #               False)
-                        if 'Count' in item:  # can get thris throught the positionUpdate event
+                        if 'Count' in item:
                             self.set_z_tool_offset_signal.emit(item[item.index('z') + 2:].split(',', 1)[0],
                                       False)
                         if 'M218' in item:
                             self.tool_offset_signal.emit(item[item.index('M218'):])
-                        if 'Active Extruder' in item:  # can get thris throught the positionUpdate event
-                            self.active_extruder_signal.emit(item[-1])
 
                         if 'M851' in item:
                             self.z_probe_offset_signal.emit(item[item.index('Z') + 1:].split(' ', 1)[0])
-                        if 'PROBING_FAILED' in item: #TODO: check if this is the correct error message
+                        if 'PROBING_FAILED' in item:
                             self.z_probing_failed_signal.emit()
 
                         for ignore_item in [
-                            #"Error",
                             "!! Printer is not ready",
                             "!! Move out of range:",
                             "!! Shutdown due to M112"
-                            # "ok",
-                            # "B:",
-                            # "N",
-                            # "echo: "
                         ]:
                            if ignore_item in item:
-                               # Ignore this item
                                break
                         else:
                            if item.startswith('!!') or item.startswith('Error'):
@@ -3312,22 +2590,14 @@ class QtWebsocket(QtCore.QThread):
                     try:
                         temperatures = {'tool0Actual': temp(data, "tool0", "actual"),
                                         'tool0Target': temp(data, "tool0", "target"),
-                                        'tool1Actual': temp(data, "tool1", "actual"),
-                                        'tool1Target': temp(data, "tool1", "target"),
                                         'bedActual': temp(data, "bed", "actual"),
                                         'bedTarget': temp(data, "bed", "target")}
                         self.temperatures_signal.emit(temperatures)
                     except KeyError:
-                        # temperatures = {'tool0Actual': 0,
-                        #                 'tool0Target': 0,
-                        #                 'tool1Actual': 0,
-                        #                 'tool1Target': 0,
-                        #                 'bedActual': 0,
-                        #                 'bedTarget': 0}
                         pass
         except Exception as e:
             logger.error("Error in QtWebsocket.process: {}".format(e))
-#
+
 class ThreadSanityCheck(QtCore.QThread):
 
     loaded_signal = QtCore.pyqtSignal()
@@ -3343,11 +2613,8 @@ class ThreadSanityCheck(QtCore.QThread):
     def run(self):
         global octopiclient
         self.shutdown_flag = False
-        # get the first value of t1 (runtime check)
         uptime = 0
-        # keep trying untill octoprint connects
         while (True):
-            # Start an object instance of octopiAPI
             try:
                 if (uptime > 60):
                     self.shutdown_flag = True
@@ -3355,23 +2622,10 @@ class ThreadSanityCheck(QtCore.QThread):
                     break
                 octopiclient = octoprintAPI(ip, apiKey)
                 if not self.virtual:
-                    # result = subprocess.Popen("dmesg | grep 'ttyUSB'", stdout=subprocess.PIPE, shell=True).communicate()[0]
-                    # result = result.split(b'\n')  # each ssid and pass from an item in a list ([ssid pass,ssid paas])
-                    # print(result)
-                    # result = [s.strip() for s in result]
-                    # for line in result:
-                    #     if b'FTDI' in line:
-                    #         self.MKSPort = line[line.index(b'ttyUSB'):line.index(b'ttyUSB') + 7].decode('utf-8')
-                    #         print(self.MKSPort)
-                    #     if b'ch34' in line:
-                    #         self.MKSPort = line[line.index(b'ttyUSB'):line.index(b'ttyUSB') + 7].decode('utf-8')
-                    #         print(self.MKSPort)
                     try:
                         octopiclient.connectPrinter(port="/tmp/printer", baudrate=115200)
                     except Exception as e:
                         octopiclient.connectPrinter(port="VIRTUAL", baudrate=115200)
-                    # else:
-                    #     octopiclient.connectPrinter(port="/dev/" + self.MKSPort, baudrate=115200)
                 break
             except Exception as e:
                 time.sleep(1)
@@ -3412,7 +2666,6 @@ class ThreadRestartNetworking(QtCore.QThread):
         self.restart_interface()
         attempt = 0
         while attempt < 3:
-            # print(getIP(self.interface))
             if getIP(self.interface):
                 self.signal.emit(getIP(self.interface))
                 break
@@ -3433,18 +2686,16 @@ class ThreadRestartNetworking(QtCore.QThread):
             subprocess.call(["ifconfig",  self.interface, "down"], shell=False)
             time.sleep(1)
             subprocess.call(["ifconfig", self.interface, "up"], shell=False)
-        # subprocess.call(["ifdown", "--force", self.interface], shell=False)
-        # subprocess.call(["ifup", "--force", self.interface], shell=False)
         time.sleep(5)
 
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    # Intialize the library (must be called once before other functions).
+# Intialize the library (must be called once before other functions).
     # Creates an object of type MainUiClass
     MainWindow = MainUiClass()
     MainWindow.show()
-    # MainWindow.showFullScreen()
+# MainWindow.showFullScreen()
     # MainWindow.setWindowFlags(QtCore.Qt.FramelessWindowHint)
     # Create NeoPixel object with appropriate configuration.
     # charm = FlickCharm()
