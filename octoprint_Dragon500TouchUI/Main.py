@@ -454,7 +454,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.QtSocket.connected_signal.connect(self.onServerConnected)
             self.QtSocket.filament_sensor_triggered_signal.connect(self.filamentSensorHandler)
             self.QtSocket.z_probing_failed_signal.connect(self.showProbingFailed)
-            self.QtSocket.tool_offset_signal.connect(self.getToolOffset)
             self.QtSocket.printer_error_signal.connect(self.showPrinterError)
     
             # Text Input events
@@ -1983,66 +1982,6 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             logger.error("Error in MainUiClass.nozzleOffset: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.nozzleOffset: {}".format(e), overlay=True)
 
-    def updateToolOffsetXY(self):
-        logger.info("MainUiClass.updateToolOffsetXY started")
-        try:
-            octopiclient.gcode(command='M503')
-            self.stackedWidget.setCurrentWidget(self.toolOffsetXYPage)
-        except Exception as e:
-            logger.error("Error in MainUiClass.updateToolOffsetXY: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.updateToolOffsetXY: {}".format(e), overlay=True)
-
-    def updateToolOffsetZ(self):
-        logger.info("MainUiClass.updateToolOffsetZ started")
-        try:
-            octopiclient.gcode(command='M503')
-            self.stackedWidget.setCurrentWidget(self.toolOffsetZpage)
-        except Exception as e:
-            logger.error("Error in MainUiClass.updateToolOffsetZ: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.updateToolOffsetZ: {}".format(e), overlay=True)
-
-    def setToolOffsetX(self):
-        logger.info("MainUiClass.setToolOffsetX started")
-        try:
-            octopiclient.gcode(command='M218 T1 X{}'.format(round(self.toolOffsetXDoubleSpinBox.value(),2)))
-            octopiclient.gcode(command='M500')
-        except Exception as e:
-            logger.error("Error in MainUiClass.setToolOffsetX: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.setToolOffsetX: {}".format(e), overlay=True)
-
-    def setToolOffsetY(self):
-        logger.info("MainUiClass.setToolOffsetY started")
-        try:
-            octopiclient.gcode(command='M218 T1 Y{}'.format(round(self.toolOffsetYDoubleSpinBox.value(),2)))
-            octopiclient.gcode(command='M500')
-            octopiclient.gcode(command='M500')
-        except Exception as e:
-            logger.error("Error in MainUiClass.setToolOffsetY: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.setToolOffsetY: {}".format(e), overlay=True)
-
-    def setToolOffsetZ(self):
-        logger.info("MainUiClass.setToolOffsetZ started")
-        try:
-            octopiclient.gcode(command='M218 T1 Z{}'.format(round(self.toolOffsetZDoubleSpinBox.value(),2)))
-            octopiclient.gcode(command='M500')
-        except Exception as e:
-            logger.error("Error in MainUiClass.setToolOffsetZ: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.setToolOffsetZ: {}".format(e), overlay=True)
-
-    def getToolOffset(self, M218Data):
-        logger.info("MainUiClass.getToolOffset started")
-        try:
-            self.toolOffsetZ = M218Data[M218Data.index('Z') + 1:].split(' ', 1)[0]
-            self.toolOffsetX = M218Data[M218Data.index('X') + 1:].split(' ', 1)[0]
-            self.toolOffsetY = M218Data[M218Data.index('Y') + 1:].split(' ', 1)[0]
-            self.toolOffsetXDoubleSpinBox.setValue(float(self.toolOffsetX))
-            self.toolOffsetYDoubleSpinBox.setValue(float(self.toolOffsetY))
-            self.toolOffsetZDoubleSpinBox.setValue(float(self.toolOffsetZ))
-            self.idexToolOffsetRestoreValue = float(self.toolOffsetZ)
-        except Exception as e:
-            logger.error("Error in MainUiClass.getToolOffset: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.getToolOffset: {}".format(e), overlay=True)
-
     def quickStep1(self):
         """
         Shows welcome message.
@@ -2409,8 +2348,6 @@ class QtWebsocket(QtCore.QThread):
     filament_sensor_triggered_signal = QtCore.pyqtSignal(str)
     firmware_updater_signal = QtCore.pyqtSignal(dict)
     set_z_tool_offset_signal = QtCore.pyqtSignal(str,bool)
-    tool_offset_signal = QtCore.pyqtSignal(str)
-    active_extruder_signal = QtCore.pyqtSignal(str)
     z_probe_offset_signal = QtCore.pyqtSignal(str)
     z_probing_failed_signal = QtCore.pyqtSignal()
     printer_error_signal = QtCore.pyqtSignal(str)
@@ -2549,9 +2486,6 @@ class QtWebsocket(QtCore.QThread):
                         if 'Count' in item:
                             self.set_z_tool_offset_signal.emit(item[item.index('z') + 2:].split(',', 1)[0],
                                       False)
-                        if 'M218' in item:
-                            self.tool_offset_signal.emit(item[item.index('M218'):])
-
                         if 'M851' in item:
                             self.z_probe_offset_signal.emit(item[item.index('Z') + 1:].split(' ', 1)[0])
                         if 'PROBING_FAILED' in item:
