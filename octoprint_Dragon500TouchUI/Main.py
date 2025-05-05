@@ -231,7 +231,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.sanityCheck.start()
             self.sanityCheck.loaded_signal.connect(self.proceed)
             self.sanityCheck.startup_error_signal.connect(self.handleStartupError)
-            self.setNewToolZOffsetFromCurrentZBool = False
+            #self.setNewToolZOffsetFromCurrentZBool = False
             self.setActiveExtruder(0)
             self.loadFlag = None
             self.dialogShown = False
@@ -442,7 +442,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.setActions started")
         try:
-            self.QtSocket.set_z_tool_offset_signal.connect(self.setZToolOffset)
+            #self.QtSocket.set_z_tool_offset_signal.connect(self.setZToolOffset)
             self.QtSocket.z_probe_offset_signal.connect(self.updateEEPROMProbeOffset)
             self.QtSocket.temperatures_signal.connect(self.updateTemperature)
             self.QtSocket.status_signal.connect(self.updateStatus)
@@ -494,20 +494,20 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.quickStep1NextButton.clicked.connect(self.quickStep2)
             self.quickStep2NextButton.clicked.connect(self.quickStep3)
             self.quickStep3NextButton.clicked.connect(self.quickStep4)
-            self.quickStep4NextButton.clicked.connect(self.nozzleHeightStep1)
-            self.nozzleHeightStep1NextButton.clicked.connect(self.nozzleHeightStep1)
+            #self.quickStep4NextButton.clicked.connect(self.nozzleHeightStep1)
+            #self.nozzleHeightStep1NextButton.clicked.connect(self.nozzleHeightStep1)
             self.quickStep1CancelButton.pressed.connect(self.cancelStep)
             self.quickStep2CancelButton.pressed.connect(self.cancelStep)
             self.quickStep3CancelButton.pressed.connect(self.cancelStep)
             self.quickStep4CancelButton.pressed.connect(self.cancelStep)
-            self.nozzleHeightStep1CancelButton.pressed.connect(self.cancelStep)
+            #self.nozzleHeightStep1CancelButton.pressed.connect(self.cancelStep)
     
             self.testPrintsButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.testPrintsPage1_6))
             self.testPrintsNextButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.testPrintsPage2_6))
             self.testPrintsBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.calibratePage))
             self.testPrintsCancelButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.calibratePage))
-            self.dualCaliberationPrintButton.pressed.connect(
-                lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''), 'dualCalibration'))
+            # self.dualCaliberationPrintButton.pressed.connect(
+            #     lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''), 'dualCalibration'))
             self.bedLevelPrintButton.pressed.connect(
                 lambda: self.testPrint(str(self.testPrintsTool0SizeComboBox.currentText()).replace('.', ''), 'bedLevel'))
             self.movementTestPrintButton.pressed.connect(
@@ -1728,20 +1728,20 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             logger.error("Error in MainUiClass.selectToolChangeFilament: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.selectToolChangeFilament: {}".format(e), overlay=True)
 
-    def setActiveExtruder(self, activeNozzle):
-        """
-        Sets the active extruder, and changes the UI accordingly. Simplified for single extruder setup.
-        """
-        logger.info("MainUiClass.setActiveExtruder started")
-        try:
-            self.tool0Label.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/activeNozzle.png")))
-            self.toolToggleChangeFilamentButton.setChecked(False)
-            self.toolToggleMotionButton.setChecked(False)
-            self.toolToggleMotionButton.setText("0")
-            self.activeExtruder = 0
-        except Exception as e:
-            logger.error("Error in MainUiClass.setActiveExtruder: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.setActiveExtruder: {}".format(e), overlay=True)
+    # def setActiveExtruder(self, activeNozzle):
+    #     """
+    #     Sets the active extruder, and changes the UI accordingly. Simplified for single extruder setup.
+    #     """
+    #     logger.info("MainUiClass.setActiveExtruder started")
+    #     try:
+    #         self.tool0Label.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/activeNozzle.png")))
+    #         self.toolToggleChangeFilamentButton.setChecked(False)
+    #         self.toolToggleMotionButton.setChecked(False)
+    #         self.toolToggleMotionButton.setText("0")
+    #         self.activeExtruder = 0
+    #     except Exception as e:
+    #         logger.error("Error in MainUiClass.setActiveExtruder: {}".format(e))
+    #         dialog.WarningOk(self, "Error in MainUiClass.setActiveExtruder: {}".format(e), overlay=True)
 
     ''' +++++++++++++++++++++++++++++++++Control Screen+++++++++++++++++++++++++++++++ '''
 
@@ -1852,28 +1852,28 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             logger.error(error_message)
             dialog.WarningOk(error_message, overlay=True)
 
-    def setZToolOffset(self, offset):
-        """
-        Sets the home offset after the caliberation wizard is done, which is a callback to
-        the response of M114 that is sent at the end of the Wizard in doneStep()
-        :param offset: the value off the offset to set. is a str is coming from M114, and is float if coming from the nozzleOffsetPage
-        :return:
+    # def setZToolOffset(self, offset):
+    #     """
+    #     Sets the home offset after the caliberation wizard is done, which is a callback to
+    #     the response of M114 that is sent at the end of the Wizard in doneStep()
+    #     :param offset: the value off the offset to set. is a str is coming from M114, and is float if coming from the nozzleOffsetPage
+    #     :return:
 
-        #TODO can make this simpler, asset the offset value to string float to begin with instead of doing confitionals
-        """
-        logger.info("MainUiClass.setZToolOffset started")
-        self.currentZPosition = offset
-        try:
-            if self.setNewToolZOffsetFromCurrentZBool:
-                print(self.toolOffsetZ)
-                print(self.currentZPosition)
-                newToolOffsetZ = (float(self.toolOffsetZ) + float(self.currentZPosition))
-                octopiclient.gcode(command='M218 T1 Z{}'.format(newToolOffsetZ))
-                self.setNewToolZOffsetFromCurrentZBool =False
-                octopiclient.gcode(command='SAVE_CONFIG')
-        except Exception as e:
-            logger.error("Error in MainUiClass.setZToolOffset: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.setZToolOffset: {}".format(e), overlay=True)
+    #     #TODO can make this simpler, asset the offset value to string float to begin with instead of doing confitionals
+    #     """
+    #     logger.info("MainUiClass.setZToolOffset started")
+    #     self.currentZPosition = offset
+    #     try:
+    #         if self.setNewToolZOffsetFromCurrentZBool:
+    #             print(self.toolOffsetZ)
+    #             print(self.currentZPosition)
+    #             newToolOffsetZ = (float(self.toolOffsetZ) + float(self.currentZPosition))
+    #             octopiclient.gcode(command='M218 T1 Z{}'.format(newToolOffsetZ))
+    #             self.setNewToolZOffsetFromCurrentZBool =False
+    #             octopiclient.gcode(command='SAVE_CONFIG')
+    #     except Exception as e:
+    #         logger.error("Error in MainUiClass.setZToolOffset: {}".format(e))
+    #         dialog.WarningOk(self, "Error in MainUiClass.setZToolOffset: {}".format(e), overlay=True)
 
     def showProbingFailed(self,msg='Probing Failed, Calibrate bed again or check for hardware issue',overlay=True):
         logger.info("MainUiClass.showProbingFailed started")
@@ -2066,28 +2066,28 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
                 pass
 
 
-    def nozzleHeightStep1(self):
-        logger.info("MainUiClass.nozzleHeightStep1 started")
-        try:
-            self.movie3.stop()
-            if self.toolZOffsetCaliberationPageCount == 0 :
-                self.toolZOffsetLabel.setText("Move the bed up or down to the First Nozzle , testing height using paper")
-                self.stackedWidget.setCurrentWidget(self.nozzleHeightStep1Page)
-                octopiclient.jog(z=10, absolute=True, speed=1500)
-                octopiclient.jog(x=calibrationPosition['X4'], y=calibrationPosition['Y4'], absolute=True, speed=10000)
-                octopiclient.jog(z=1, absolute=True, speed=1500)
-                self.toolZOffsetCaliberationPageCount = 1
-            else:
-                self.doneStep()
-        except Exception as e:
-            logger.error("Error in MainUiClass.nozzleHeightStep1: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.nozzleHeightStep1: {}".format(e), overlay=True)
-            try:
-                self.movie1.stop()
-                self.movie2.stop()
-                self.movie3.stop()
-            except:
-                pass
+    # def nozzleHeightStep1(self):
+    #     logger.info("MainUiClass.nozzleHeightStep1 started")
+    #     try:
+    #         self.movie3.stop()
+    #         if self.toolZOffsetCaliberationPageCount == 0 :
+    #             self.toolZOffsetLabel.setText("Move the bed up or down to the First Nozzle , testing height using paper")
+    #             self.stackedWidget.setCurrentWidget(self.nozzleHeightStep1Page)
+    #             octopiclient.jog(z=10, absolute=True, speed=1500)
+    #             octopiclient.jog(x=calibrationPosition['X4'], y=calibrationPosition['Y4'], absolute=True, speed=10000)
+    #             octopiclient.jog(z=1, absolute=True, speed=1500)
+    #             self.toolZOffsetCaliberationPageCount = 1
+    #         else:
+    #             self.doneStep()
+    #     except Exception as e:
+    #         logger.error("Error in MainUiClass.nozzleHeightStep1: {}".format(e))
+    #         dialog.WarningOk(self, "Error in MainUiClass.nozzleHeightStep1: {}".format(e), overlay=True)
+    #         try:
+    #             self.movie1.stop()
+    #             self.movie2.stop()
+    #             self.movie3.stop()
+    #         except:
+    #             pass
 
     def doneStep(self):
         """
@@ -2095,7 +2095,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.doneStep started")
         try:
-            self.setNewToolZOffsetFromCurrentZBool = True
+            #self.setNewToolZOffsetFromCurrentZBool = True
 
             octopiclient.gcode(command='M114')
             octopiclient.jog(z=4, absolute=True, speed=1500)
@@ -2347,7 +2347,7 @@ class QtWebsocket(QtCore.QThread):
     connected_signal = QtCore.pyqtSignal()
     filament_sensor_triggered_signal = QtCore.pyqtSignal(str)
     firmware_updater_signal = QtCore.pyqtSignal(dict)
-    set_z_tool_offset_signal = QtCore.pyqtSignal(str,bool)
+    #set_z_tool_offset_signal = QtCore.pyqtSignal(str,bool)
     z_probe_offset_signal = QtCore.pyqtSignal(str)
     z_probing_failed_signal = QtCore.pyqtSignal()
     printer_error_signal = QtCore.pyqtSignal(str)
@@ -2483,9 +2483,9 @@ class QtWebsocket(QtCore.QThread):
 
                         if 'M206' in item:
                             self.z_home_offset_signal.emit(item[item.index('Z') + 1:].split(' ', 1)[0])
-                        if 'Count' in item:
-                            self.set_z_tool_offset_signal.emit(item[item.index('z') + 2:].split(',', 1)[0],
-                                      False)
+                        # if 'Count' in item:
+                        #     self.set_z_tool_offset_signal.emit(item[item.index('z') + 2:].split(',', 1)[0],
+                        #               False)
                         if 'M851' in item:
                             self.z_probe_offset_signal.emit(item[item.index('Z') + 1:].split(' ', 1)[0])
                         if 'PROBING_FAILED' in item:
