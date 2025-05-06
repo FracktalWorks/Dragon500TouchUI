@@ -232,19 +232,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.sanityCheck.loaded_signal.connect(self.proceed)
             self.sanityCheck.startup_error_signal.connect(self.handleStartupError)
             #self.setNewToolZOffsetFromCurrentZBool = False
-            self.setActiveExtruder(0)
+            #self.setActiveExtruder(0)
             self.loadFlag = None
             self.dialogShown = False
 
             self.dialog_doorlock = None
             self.dialog_filamentsensor = None
-
-            #self.toolToggleChangeFilamentButton = QtWidgets.QPushButton(self)
-            self.toolToggleChangeFilamentButton.setObjectName("toolToggleChangeFilamentButton")
-            #self.toolToggleChangeFilamentButton.setText("Change Filament")
-            #self.toolToggleChangeFilamentButton.setCheckable(True)
-            #self.toolToggleChangeFilamentButton.setGeometry(QtCore.QRect(50, 50, 150, 50))  # Example geometry
-            self.toolToggleChangeFilamentButton.clicked.connect(self.changeFilament)
 
             for spinbox in self.findChildren(QtWidgets.QSpinBox):
                 lineEdit = spinbox.lineEdit()
@@ -1310,7 +1303,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             time.sleep(1)
             if self.printerStatusText not in ["Printing","Paused"]:
                 octopiclient.gcode("G28")
-            self.selectToolChangeFilament()
+            # self.selectToolChangeFilament()
 
             self.stackedWidget.setCurrentWidget(self.changeFilamentPage)
             self.changeFilamentComboBox.clear()
@@ -1723,34 +1716,34 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
 
     ''' ++++++++++++++++++++++++++++Active Extruder/Tool Change++++++++++++++++++++++++ '''
 
-    def selectToolChangeFilament(self):
-        """
-        Selects the tool for filament change. Simplified for single extruder setup.
-        """
-        logger.info("MainUiClass.selectToolChangeFilament started")
-        try:
-            self.setActiveExtruder(0)
-            octopiclient.selectTool(0)
-            octopiclient.jog(tool0PurgePosition['X'], tool0PurgePosition["Y"], absolute=True, speed=10000)
-            time.sleep(1)
-        except Exception as e:
-            logger.error("Error in MainUiClass.selectToolChangeFilament: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.selectToolChangeFilament: {}".format(e), overlay=True)
+    # def selectToolChangeFilament(self):
+    #     """
+    #     Selects the tool for filament change. Simplified for single extruder setup.
+    #     """
+    #     logger.info("MainUiClass.selectToolChangeFilament started")
+    #     try:
+    #         self.setActiveExtruder(0)
+    #         octopiclient.selectTool(0)
+    #         octopiclient.jog(tool0PurgePosition['X'], tool0PurgePosition["Y"], absolute=True, speed=10000)
+    #         time.sleep(1)
+    #     except Exception as e:
+    #         logger.error("Error in MainUiClass.selectToolChangeFilament: {}".format(e))
+    #         dialog.WarningOk(self, "Error in MainUiClass.selectToolChangeFilament: {}".format(e), overlay=True)
 
-    def setActiveExtruder(self, activeNozzle):
-        """
-        Sets the active extruder, and changes the UI accordingly. Simplified for single extruder setup.
-        """
-        logger.info("MainUiClass.setActiveExtruder started")
-        try:
-            self.tool0Label.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/activeNozzle.png")))
-            self.toolToggleChangeFilamentButton.setChecked(False)
-            self.toolToggleMotionButton.setChecked(False)
-            self.toolToggleMotionButton.setText("0")
-            self.activeExtruder = 0
-        except Exception as e:
-            logger.error("Error in MainUiClass.setActiveExtruder: {}".format(e))
-            dialog.WarningOk(self, "Error in MainUiClass.setActiveExtruder: {}".format(e), overlay=True)
+    # def setActiveExtruder(self, activeNozzle):
+    #     """
+    #     Sets the active extruder, and changes the UI accordingly. Simplified for single extruder setup.
+    #     """
+    #     logger.info("MainUiClass.setActiveExtruder started")
+    #     try:
+    #         self.tool0Label.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/activeNozzle.png")))
+    #         self.toolToggleChangeFilamentButton.setChecked(False)
+    #         self.toolToggleMotionButton.setChecked(False)
+    #         self.toolToggleMotionButton.setText("0")
+    #         self.activeExtruder = 0
+    #     except Exception as e:
+    #         logger.error("Error in MainUiClass.setActiveExtruder: {}".format(e))
+    #         dialog.WarningOk(self, "Error in MainUiClass.setActiveExtruder: {}".format(e), overlay=True)
 
     ''' +++++++++++++++++++++++++++++++++Control Screen+++++++++++++++++++++++++++++++ '''
 
@@ -2645,4 +2638,4 @@ if __name__ == '__main__':
     # charm.activateOn(MainWindow.FileListWidget)
 sys.exit(app.exec_())
 
-# 1:06 am
+# 2:32 am
