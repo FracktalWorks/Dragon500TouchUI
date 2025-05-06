@@ -74,6 +74,86 @@ filaments = [
 
 filaments = OrderedDict(filaments)
 
+filament_settings = {
+    "PLA": {
+        "initialExtrudeLength": 10,
+        "initialExtrudeSpeed": 100,
+        "retractLength": 50,
+        "retractSpeed": 500,
+        "dwellTime": 2
+    },
+    "ABS": {
+        "initialExtrudeLength": 10,
+        "initialExtrudeSpeed": 100,
+        "retractLength": 50,
+        "retractSpeed": 500,
+        "dwellTime": 2
+    },
+    "PETG": {
+        "initialExtrudeLength": 10,
+        "initialExtrudeSpeed": 100,
+        "retractLength": 50,
+        "retractSpeed": 500,
+        "dwellTime": 2
+    },
+    "PVA": {
+        "initialExtrudeLength": 10,
+        "initialExtrudeSpeed": 100,
+        "retractLength": 50,
+        "retractSpeed": 500,
+        "dwellTime": 2
+    },
+    "TPU": {
+        "initialExtrudeLength": 10,
+        "initialExtrudeSpeed": 100,
+        "retractLength": 50,
+        "retractSpeed": 500,
+        "dwellTime": 2
+    },
+    "Nylon": {
+        "initialExtrudeLength": 10,
+        "initialExtrudeSpeed": 100,
+        "retractLength": 50,
+        "retractSpeed": 500,
+        "dwellTime": 2
+    },
+    "PolyCarbonate": {
+        "initialExtrudeLength": 10,
+        "initialExtrudeSpeed": 100,
+        "retractLength": 50,
+        "retractSpeed": 500,
+        "dwellTime": 2
+    },
+    "HIPS": {
+        "initialExtrudeLength": 10,
+        "initialExtrudeSpeed": 100,
+        "retractLength": 50,
+        "retractSpeed": 500,
+        "dwellTime": 2
+    },
+    "WoodFill": {
+        "initialExtrudeLength": 10,
+        "initialExtrudeSpeed": 100,
+        "retractLength": 50,
+        "retractSpeed": 500,
+        "dwellTime": 2
+    },
+    "CopperFill": {
+        "initialExtrudeLength": 10,
+        "initialExtrudeSpeed": 100,
+        "retractLength": 50,
+        "retractSpeed": 500,
+        "dwellTime": 2
+    },
+    "Breakaway": {
+        "initialExtrudeLength": 10,
+        "initialExtrudeSpeed": 100,
+        "retractLength": 50,
+        "retractSpeed": 500,
+        "dwellTime": 2
+    }
+}
+
 calibrationPosition = {'X1': 110, 'Y1': 67,
                        'X2': 410, 'Y2': 67,
                        'X3': 260, 'Y3': 380,
@@ -1263,57 +1343,23 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
 
             filament_type = self.changeFilamentComboBox.currentText()
+            settings = filament_settings.get(filament_type, {})
 
-            if filament_type == "TPU":
-                octopiclient.gcode("G91")
-                octopiclient.gcode("G1 E10 F100")
-                time.sleep(self.calcExtrudeTime(10, 100))
-                time.sleep(2)
-                octopiclient.gcode("G1 E-50 F500")
-                time.sleep(self.calcExtrudeTime(50, 500))
-                time.sleep(12)
-                octopiclient.gcode("G90")
-            
-            elif filament_type == "PLA":
-                octopiclient.gcode("G91")
-                octopiclient.gcode("G1 E10 F100")
-                time.sleep(self.calcExtrudeTime(10, 100))
-                time.sleep(2)
-                octopiclient.gcode("G1 E-50 F500")
-                time.sleep(self.calcExtrudeTime(50, 500))
-                time.sleep(12)
-                octopiclient.gcode("G90")
+            initialExtrudeLength = settings.get("initialExtrudeLength", 10)
+            initialExtrudeSpeed = settings.get("initialExtrudeSpeed", 100)
+            retractLength = settings.get("retractLength", 50)
+            retractSpeed = settings.get("retractSpeed", 500)
+            dwellTime = settings.get("dwellTime", 2)
 
-            elif filament_type == "PETG":
-                octopiclient.gcode("G91")
-                octopiclient.gcode("G1 E10 F100")
-                time.sleep(self.calcExtrudeTime(10, 100))
-                time.sleep(2)
-                octopiclient.gcode("G1 E-50 F500")
-                time.sleep(self.calcExtrudeTime(50, 500))
-                time.sleep(12)
-                octopiclient.gcode("G90")
+            octopiclient.gcode("G91")
+            octopiclient.gcode(f"G1 E{initialExtrudeLength} F{initialExtrudeSpeed}")
+            time.sleep(self.calcExtrudeTime(initialExtrudeLength, initialExtrudeSpeed))
+            time.sleep(dwellTime)
+            octopiclient.gcode(f"G1 E-{retractLength} F{retractSpeed}")
+            time.sleep(self.calcExtrudeTime(retractLength, retractSpeed))
+            time.sleep(12)
+            octopiclient.gcode("G90")
 
-            elif filament_type == "ABS":
-                octopiclient.gcode("G91")
-                octopiclient.gcode("G1 E10 F100")
-                time.sleep(self.calcExtrudeTime(10, 100))
-                time.sleep(2)
-                octopiclient.gcode("G1 E-50 F500")
-                time.sleep(self.calcExtrudeTime(50, 500))
-                time.sleep(12)
-                octopiclient.gcode("G90")
-
-            else:
-                octopiclient.gcode("G91")
-                octopiclient.gcode("G1 E10 F100")
-                time.sleep(self.calcExtrudeTime(10, 100))
-                time.sleep(2)
-                octopiclient.gcode("G1 E-50 F500")
-                time.sleep(self.calcExtrudeTime(50, 500))
-                time.sleep(12)
-                octopiclient.gcode("G90")
-            
             for i in range(int(ptfeTubeLength/150)):
                 octopiclient.gcode("G91")
                 octopiclient.gcode("G1 E-150 F2000")
