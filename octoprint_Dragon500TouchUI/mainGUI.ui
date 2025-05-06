@@ -7263,7 +7263,7 @@ QPushButton:focus {
      </widget>
     </widget>
     <widget class="QWidget" name="quickStep4Page">
-     <widget class="QPushButton" name="quickStep4CancelButton">
+     <widget class="QPushButton" name="quickStep4DoneButton">
       <property name="geometry">
        <rect>
         <x>-10</x>

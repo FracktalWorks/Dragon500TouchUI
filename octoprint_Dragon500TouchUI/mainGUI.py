@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MainGUI.ui'
+# Form implementation generated from reading ui file 'mainGUI.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -93,18 +93,6 @@ class Ui_MainWindow(object):
         self.label_4.setPixmap(QtGui.QPixmap("templates/img/Fracktal Logo.png"))
         self.label_4.setScaledContents(True)
         self.label_4.setObjectName("label_4")
-        self.fileName_2 = QtWidgets.QLabel(self.loadingPage)
-        self.fileName_2.setGeometry(QtCore.QRect(360, 310, 101, 31))
-        font = QtGui.QFont()
-        font.setFamily("Gotham Medium")
-        font.setPointSize(12)
-        self.fileName_2.setFont(font)
-        self.fileName_2.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        self.fileName_2.setStyleSheet("color: rgb(255, 255, 255);\n"
-"background-color: rgba(255, 255, 255, 0);")
-        self.fileName_2.setScaledContents(True)
-        self.fileName_2.setWordWrap(False)
-        self.fileName_2.setObjectName("fileName_2")
         self.loadingGif = QtWidgets.QLabel(self.loadingPage)
         self.loadingGif.setGeometry(QtCore.QRect(70, 90, 666, 480))
         self.loadingGif.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
@@ -115,7 +103,6 @@ class Ui_MainWindow(object):
         self.LoadingLabel.raise_()
         self.loadingGif.raise_()
         self.label_4.raise_()
-        self.fileName_2.raise_()
         self.stackedWidget.addWidget(self.loadingPage)
         self.homePage = QtWidgets.QWidget()
         self.homePage.setObjectName("homePage")
@@ -4213,13 +4200,13 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.quickStep3Page)
         self.quickStep4Page = QtWidgets.QWidget()
         self.quickStep4Page.setObjectName("quickStep4Page")
-        self.quickStep4NextButton = QtWidgets.QPushButton(self.quickStep4Page)
-        self.quickStep4NextButton.setGeometry(QtCore.QRect(0, 360, 401, 121))
+        self.quickStep4DoneButton = QtWidgets.QPushButton(self.quickStep4Page)
+        self.quickStep4DoneButton.setGeometry(QtCore.QRect(-10, 360, 811, 121))
         font = QtGui.QFont()
         font.setFamily("Gotham")
         font.setPointSize(16)
-        self.quickStep4NextButton.setFont(font)
-        self.quickStep4NextButton.setStyleSheet("QPushButton {\n"
+        self.quickStep4DoneButton.setFont(font)
+        self.quickStep4DoneButton.setStyleSheet("QPushButton {\n"
 "     border: 1px solid rgb(87, 87, 87);\n"
 "    background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0.188, stop:0 rgba(180, 180, 180, 255), stop:1 rgba(255, 255, 255, 255));\n"
 "\n"
@@ -4242,39 +4229,8 @@ class Ui_MainWindow(object):
 "QPushButton:focus {\n"
 "    outline: none;\n"
 "}")
-        self.quickStep4NextButton.setIconSize(QtCore.QSize(40, 40))
-        self.quickStep4NextButton.setObjectName("quickStep4NextButton")
-        self.quickStep4CancelButton = QtWidgets.QPushButton(self.quickStep4Page)
-        self.quickStep4CancelButton.setGeometry(QtCore.QRect(400, 360, 401, 121))
-        font = QtGui.QFont()
-        font.setFamily("Gotham")
-        font.setPointSize(16)
-        self.quickStep4CancelButton.setFont(font)
-        self.quickStep4CancelButton.setStyleSheet("QPushButton {\n"
-"     border: 1px solid rgb(87, 87, 87);\n"
-"    background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0.188, stop:0 rgba(180, 180, 180, 255), stop:1 rgba(255, 255, 255, 255));\n"
-"\n"
-"\n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-"                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
-"}\n"
-"\n"
-"QPushButton:flat {\n"
-"    border: none; /* no border for a flat push button */\n"
-"}\n"
-"\n"
-"QPushButton:default {\n"
-"    border-color: navy; /* make the default button prominent */\n"
-"}\n"
-"\n"
-"QPushButton:focus {\n"
-"    outline: none;\n"
-"}")
-        self.quickStep4CancelButton.setIconSize(QtCore.QSize(40, 40))
-        self.quickStep4CancelButton.setObjectName("quickStep4CancelButton")
+        self.quickStep4DoneButton.setIconSize(QtCore.QSize(40, 40))
+        self.quickStep4DoneButton.setObjectName("quickStep4DoneButton")
         self.calibrateLabel_12 = QtWidgets.QLabel(self.quickStep4Page)
         self.calibrateLabel_12.setGeometry(QtCore.QRect(10, 10, 781, 91))
         font = QtGui.QFont()
@@ -8328,14 +8284,13 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.mainApplication)
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(22)
         self.controlTabWidget.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.fileName_2.setText(_translate("MainWindow", "Loading ..."))
         self.FileNameLabel.setText(_translate("MainWindow", "File:"))
         self.printTimeLabel.setText(_translate("MainWindow", "Print Time:"))
         self.fileName.setText(_translate("MainWindow", "fileName"))
@@ -8463,8 +8418,7 @@ class Ui_MainWindow(object):
         self.quickStep3NextButton.setText(_translate("MainWindow", "Next"))
         self.quickStep3CancelButton.setText(_translate("MainWindow", "Cancel"))
         self.calibrateLabel_10.setText(_translate("MainWindow", "Repeat the same using the front right leveling screw"))
-        self.quickStep4NextButton.setText(_translate("MainWindow", "Next"))
-        self.quickStep4CancelButton.setText(_translate("MainWindow", "Cancel"))
+        self.quickStep4DoneButton.setText(_translate("MainWindow", "Done"))
         self.calibrateLabel_12.setText(_translate("MainWindow", "Repeat the same using the back leveling screw"))
         self.nozzleHeightStep1NextButton.setText(_translate("MainWindow", "Next"))
         self.nozzleHeightStep1CancelButton.setText(_translate("MainWindow", "Cancel"))
