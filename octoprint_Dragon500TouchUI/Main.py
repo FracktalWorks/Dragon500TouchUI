@@ -491,12 +491,12 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.quickStep1NextButton.clicked.connect(self.quickStep2)
             self.quickStep2NextButton.clicked.connect(self.quickStep3)
             self.quickStep3NextButton.clicked.connect(self.quickStep4)
-            self.quickStep4DoneButton.clicked.connect(self.calibratePage)
+            self.quickStep4DoneButton.clicked.connect(self.cancelStep)
             #self.nozzleHeightStep1NextButton.clicked.connect(self.nozzleHeightStep1)
             self.quickStep1CancelButton.pressed.connect(self.cancelStep)
             self.quickStep2CancelButton.pressed.connect(self.cancelStep)
             self.quickStep3CancelButton.pressed.connect(self.cancelStep)
-            self.quickStep4CancelButton.pressed.connect(self.cancelStep)
+            self.quickStep4DoneButton.pressed.connect(self.cancelStep)
             #self.nozzleHeightStep1CancelButton.pressed.connect(self.cancelStep)
     
             self.testPrintsButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.testPrintsPage1_6))
@@ -2638,4 +2638,4 @@ if __name__ == '__main__':
     # charm.activateOn(MainWindow.FileListWidget)
 sys.exit(app.exec_())
 
-# 2:32 am
+# 3 35 pm
