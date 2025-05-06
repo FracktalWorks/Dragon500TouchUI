@@ -1570,44 +1570,49 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         :param temperature: dict containing key:value pairs with keys being the tools, bed and their values being their corresponding temperatures
         """
         try:
-            if temperature['tool0Target'] == 0:
+            tool0_actual = temperature.get('tool0Actual', 0) or 0
+            tool0_target = temperature.get('tool0Target', 0) or 0
+            bed_actual = temperature.get('bedActual', 0) or 0
+            bed_target = temperature.get('bedTarget', 0) or 0
+
+            if tool0_target == 0:
                 self.tool0TempBar.setMaximum(300)
                 self.tool0TempBar.setStyleSheet(styles.bar_heater_cold)
-            elif temperature['tool0Actual'] <= temperature['tool0Target']:
-                self.tool0TempBar.setMaximum(temperature['tool0Target'])
+            elif tool0_actual <= tool0_target:
+                self.tool0TempBar.setMaximum(tool0_target)
                 self.tool0TempBar.setStyleSheet(styles.bar_heater_heating)
             else:
-                self.tool0TempBar.setMaximum(temperature['tool0Actual'])
-            self.tool0TempBar.setValue(temperature['tool0Actual'])
-            self.tool0ActualTemperature.setText(str(int(temperature['tool0Actual'])))
-            self.tool0TargetTemperature.setText(str(int(temperature['tool0Target'])))
+                self.tool0TempBar.setMaximum(tool0_actual)
+            self.tool0TempBar.setValue(tool0_actual)
+            self.tool0ActualTemperature.setText(str(int(tool0_actual)))
+            self.tool0TargetTemperature.setText(str(int(tool0_target)))
 
-            if temperature['bedTarget'] == 0:
+            if bed_target == 0:
                 self.bedTempBar.setMaximum(150)
                 self.bedTempBar.setStyleSheet(styles.bar_heater_cold)
-            elif temperature['bedActual'] <= temperature['bedTarget']:
-                self.bedTempBar.setMaximum(temperature['bedTarget'])
+            elif bed_actual <= bed_target:
+                self.bedTempBar.setMaximum(bed_target)
                 self.bedTempBar.setStyleSheet(styles.bar_heater_heating)
             else:
-                self.bedTempBar.setMaximum(temperature['bedActual'])
-            self.bedTempBar.setValue(temperature['bedActual'])
-            self.bedActualTemperatute.setText(str(int(temperature['bedActual'])))
-            self.bedTargetTemperature.setText(str(int(temperature['bedTarget'])))
+                self.bedTempBar.setMaximum(bed_actual)
+            self.bedTempBar.setValue(bed_actual)
+            self.bedActualTemperatute.setText(str(int(bed_actual)))
+            self.bedTargetTemperature.setText(str(int(bed_target)))
 
             if self.changeFilamentHeatingFlag:
-                if temperature['tool0Target'] == 0:
+                if tool0_target == 0:
                     self.changeFilamentProgress.setMaximum(300)
-                elif temperature['tool0Target'] - temperature['tool0Actual'] > 1:
-                    self.changeFilamentProgress.setMaximum(temperature['tool0Target'])
+                elif tool0_target - tool0_actual > 1:
+                    self.changeFilamentProgress.setMaximum(tool0_target)
                 else:
-                    self.changeFilamentProgress.setMaximum(temperature['tool0Actual'])
+                    self.changeFilamentProgress.setMaximum(tool0_actual)
                     self.changeFilamentHeatingFlag = False
                     if self.loadFlag:
                         self.changeFilamentLoadFunction()
                     else:
                         octopiclient.extrude(5)
                         self.changeFilamentRetractFunction()
-                self.changeFilamentProgress.setValue(temperature['tool0Actual'])
+                self.changeFilamentProgress.setValue(tool0_actual)
 
         except Exception as e:
             logger.error("Error in MainUiClass.updateTemperature: {}".format(e))
@@ -1728,20 +1733,20 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             logger.error("Error in MainUiClass.selectToolChangeFilament: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.selectToolChangeFilament: {}".format(e), overlay=True)
 
-    # def setActiveExtruder(self, activeNozzle):
-    #     """
-    #     Sets the active extruder, and changes the UI accordingly. Simplified for single extruder setup.
-    #     """
-    #     logger.info("MainUiClass.setActiveExtruder started")
-    #     try:
-    #         self.tool0Label.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/activeNozzle.png")))
-    #         self.toolToggleChangeFilamentButton.setChecked(False)
-    #         self.toolToggleMotionButton.setChecked(False)
-    #         self.toolToggleMotionButton.setText("0")
-    #         self.activeExtruder = 0
-    #     except Exception as e:
-    #         logger.error("Error in MainUiClass.setActiveExtruder: {}".format(e))
-    #         dialog.WarningOk(self, "Error in MainUiClass.setActiveExtruder: {}".format(e), overlay=True)
+    def setActiveExtruder(self, activeNozzle):
+        """
+        Sets the active extruder, and changes the UI accordingly. Simplified for single extruder setup.
+        """
+        logger.info("MainUiClass.setActiveExtruder started")
+        try:
+            self.tool0Label.setPixmap(QtGui.QPixmap(_fromUtf8("templates/img/activeNozzle.png")))
+            self.toolToggleChangeFilamentButton.setChecked(False)
+            self.toolToggleMotionButton.setChecked(False)
+            self.toolToggleMotionButton.setText("0")
+            self.activeExtruder = 0
+        except Exception as e:
+            logger.error("Error in MainUiClass.setActiveExtruder: {}".format(e))
+            dialog.WarningOk(self, "Error in MainUiClass.setActiveExtruder: {}".format(e), overlay=True)
 
     ''' +++++++++++++++++++++++++++++++++Control Screen+++++++++++++++++++++++++++++++ '''
 
