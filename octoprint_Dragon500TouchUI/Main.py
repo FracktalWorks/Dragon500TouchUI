@@ -239,13 +239,17 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.dialog_doorlock = None
             self.dialog_filamentsensor = None
 
+            #self.toolToggleChangeFilamentButton = QtWidgets.QPushButton(self)
+            self.toolToggleChangeFilamentButton.setObjectName("toolToggleChangeFilamentButton")
+            #self.toolToggleChangeFilamentButton.setText("Change Filament")
+            #self.toolToggleChangeFilamentButton.setCheckable(True)
+            #self.toolToggleChangeFilamentButton.setGeometry(QtCore.QRect(50, 50, 150, 50))  # Example geometry
+            self.toolToggleChangeFilamentButton.clicked.connect(self.changeFilament)
+
             for spinbox in self.findChildren(QtWidgets.QSpinBox):
                 lineEdit = spinbox.lineEdit()
                 lineEdit.setReadOnly(True)
                 lineEdit.setDisabled(True)
-                p = lineEdit.palette()
-                p.setColor(QtGui.QPalette.Highlight, QtGui.QColor(40, 40, 40))
-                lineEdit.setPalette(p)
 
 
         except Exception as e:
@@ -2640,3 +2644,5 @@ if __name__ == '__main__':
     # charm = FlickCharm()
     # charm.activateOn(MainWindow.FileListWidget)
 sys.exit(app.exec_())
+
+# 1:06 am
