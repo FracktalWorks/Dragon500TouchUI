@@ -1261,21 +1261,59 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         logger.info("MainUiClass.changeFilamentRetractFunction started")
         try:
             self.stackedWidget.setCurrentWidget(self.changeFilamentRetractPage)
-# Tip Shaping to prevent filament jamming in nozzle
-            if self.changeFilamentComboBox.currentText() == "TPU":
+
+            filament_type = self.changeFilamentComboBox.currentText()
+
+            if filament_type == "TPU":
                 octopiclient.gcode("G91")
-                octopiclient.gcode("G1 E10 F300")
-                time.sleep(self.calcExtrudeTime(10, 300))
+                octopiclient.gcode("G1 E10 F100")
+                time.sleep(self.calcExtrudeTime(10, 100))
+                time.sleep(2)
+                octopiclient.gcode("G1 E-50 F500")
+                time.sleep(self.calcExtrudeTime(50, 500))
+                time.sleep(12)
+                octopiclient.gcode("G90")
+            
+            elif filament_type == "PLA":
+                octopiclient.gcode("G91")
+                octopiclient.gcode("G1 E10 F100")
+                time.sleep(self.calcExtrudeTime(10, 100))
+                time.sleep(2)
+                octopiclient.gcode("G1 E-50 F500")
+                time.sleep(self.calcExtrudeTime(50, 500))
+                time.sleep(12)
+                octopiclient.gcode("G90")
+
+            elif filament_type == "PETG":
+                octopiclient.gcode("G91")
+                octopiclient.gcode("G1 E10 F100")
+                time.sleep(self.calcExtrudeTime(10, 100))
+                time.sleep(2)
+                octopiclient.gcode("G1 E-50 F500")
+                time.sleep(self.calcExtrudeTime(50, 500))
+                time.sleep(12)
+                octopiclient.gcode("G90")
+
+            elif filament_type == "ABS":
+                octopiclient.gcode("G91")
+                octopiclient.gcode("G1 E10 F100")
+                time.sleep(self.calcExtrudeTime(10, 100))
+                time.sleep(2)
+                octopiclient.gcode("G1 E-50 F500")
+                time.sleep(self.calcExtrudeTime(50, 500))
+                time.sleep(12)
+                octopiclient.gcode("G90")
+
             else:
                 octopiclient.gcode("G91")
-                octopiclient.gcode("G1 E10 F600")
-                time.sleep(self.calcExtrudeTime(10, 600))
-            octopiclient.gcode("G1 E-25 F6000")
-            time.sleep(self.calcExtrudeTime(20, 6000))
-            time.sleep(8)
-            octopiclient.gcode("G1 E-150 F5000")
-            time.sleep(self.calcExtrudeTime(150, 5000))
-            octopiclient.gcode("G90")
+                octopiclient.gcode("G1 E10 F100")
+                time.sleep(self.calcExtrudeTime(10, 100))
+                time.sleep(2)
+                octopiclient.gcode("G1 E-50 F500")
+                time.sleep(self.calcExtrudeTime(50, 500))
+                time.sleep(12)
+                octopiclient.gcode("G90")
+            
             for i in range(int(ptfeTubeLength/150)):
                 octopiclient.gcode("G91")
                 octopiclient.gcode("G1 E-150 F2000")
