@@ -491,7 +491,7 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.quickStep1NextButton.clicked.connect(self.quickStep2)
             self.quickStep2NextButton.clicked.connect(self.quickStep3)
             self.quickStep3NextButton.clicked.connect(self.quickStep4)
-            #self.quickStep4NextButton.clicked.connect(self.nozzleHeightStep1)
+            self.quickStep4DoneButton.clicked.connect(self.calibratePage)
             #self.nozzleHeightStep1NextButton.clicked.connect(self.nozzleHeightStep1)
             self.quickStep1CancelButton.pressed.connect(self.cancelStep)
             self.quickStep2CancelButton.pressed.connect(self.cancelStep)
