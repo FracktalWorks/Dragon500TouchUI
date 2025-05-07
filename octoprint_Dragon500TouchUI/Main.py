@@ -2433,7 +2433,6 @@ class QtWebsocket(QtCore.QThread):
     connected_signal = QtCore.pyqtSignal()
     filament_sensor_triggered_signal = QtCore.pyqtSignal(str)
     firmware_updater_signal = QtCore.pyqtSignal(dict)
-    #set_z_tool_offset_signal = QtCore.pyqtSignal(str,bool)
     z_probe_offset_signal = QtCore.pyqtSignal(str)
     z_probing_failed_signal = QtCore.pyqtSignal()
     printer_error_signal = QtCore.pyqtSignal(str)
@@ -2531,14 +2530,14 @@ class QtWebsocket(QtCore.QThread):
         if message_type == "a":
             self.process(data)
 
-    def on_open(self,ws):
+    def on_open(self,ws):        
         self.authenticate()
 
     def on_close(self, ws):
-        pass
+        logger.warning("WebSocket connection closed")
 
     def on_error(self, ws, error):
-        logger.error("Error in QtWebsocket: {}".format(error))
+        logger.error("WebSocket error: {}".format(error))
 
     @run_async
     def process(self, data):
@@ -2722,4 +2721,4 @@ if __name__ == '__main__':
     # charm.activateOn(MainWindow.FileListWidget)
 sys.exit(app.exec_())
 
-# 3 35 pm
+# 6 25 pm
