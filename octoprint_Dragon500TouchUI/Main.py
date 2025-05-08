@@ -156,7 +156,7 @@ filament_settings = {
 
 calibrationPosition = {'X1': 110, 'Y1': 67,
                        'X2': 410, 'Y2': 67,
-                       'X3': 260, 'Y3': 380,
+                       'X3': 260, 'Y3': 350,
                        'X4': 260, 'Y4': 20
                        }
 
