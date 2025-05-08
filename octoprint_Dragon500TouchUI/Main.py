@@ -2421,7 +2421,6 @@ class QtWebsocket(QtCore.QThread):
     https://pypi.python.org/pypi/websocket-client
     https://wiki.python.org/moin/PyQt/Threading,_Signals_and_Slots
     """
-
     z_home_offset_signal = QtCore.pyqtSignal(str)
     temperatures_signal = QtCore.pyqtSignal(dict)
     status_signal = QtCore.pyqtSignal(str)
@@ -2442,20 +2441,27 @@ class QtWebsocket(QtCore.QThread):
         super(QtWebsocket, self).__init__()
         self.ws = None
         self.heartbeat_timer = None
+        self.reconnect_attempts = 0
+        self.max_reconnect_attempts = 5
+        self.reconnect_delay = 5  # seconds
+        self._initialize_websocket()
+
+    def _initialize_websocket(self):
         try:
             url = "ws://{}/sockjs/{:0>3d}/{}/websocket".format(
                 ip,
                 random.randrange(0, stop=999),
                 uuid.uuid4()
             )
-
-            self.ws = websocket.WebSocketApp(url,
-                                             on_message=self.on_message,
-                                             on_error=self.on_error,
-                                             on_close=self.on_close,
-                                             on_open=self.on_open)
+            self.ws = websocket.WebSocketApp(
+                url,
+                on_message=self.on_message,
+                on_error=self.on_error,
+                on_close=self.on_close,
+                on_open=self.on_open
+            )
         except Exception as e:
-            logger.error("Error in QtWebsocket: {}".format(e))
+            logger.error("Error initializing WebSocket: {}".format(e))
 
     def run(self):
         logger.info("QtWebsocket.run started")
@@ -2464,6 +2470,7 @@ class QtWebsocket(QtCore.QThread):
             self.reset_heartbeat_timer()
         except Exception as e:
             logger.error("Error in QtWebsocket.run: {}".format(e))
+
     def reset_heartbeat_timer(self):
         try:
             if self.heartbeat_timer is not None:
@@ -2473,13 +2480,21 @@ class QtWebsocket(QtCore.QThread):
             self.heartbeat_timer.start()
         except Exception as e:
             logger.error("Error in QtWebsocket.reset_heartbeat_timer: {}".format(e))
+
     def reestablish_connection(self):
-        logger.info("QtWebsocket.reestablish_connection started")
+        logger.info("Reestablishing WebSocket connection...")
         try:
-            self.__init__()
+            self.reconnect_attempts += 1
+            if self.reconnect_attempts > self.max_reconnect_attempts:
+                logger.error("Max reconnect attempts reached. Giving up.")
+                return
+
+            self._initialize_websocket()
             self.start()
+            logger.info("Reconnection attempt {} succeeded.".format(self.reconnect_attempts))
         except Exception as e:
             logger.error("Error in QtWebsocket.reestablish_connection: {}".format(e))
+
     def send(self, data):
         logger.info("QtWebsocket.send started")
         try:
@@ -2487,7 +2502,6 @@ class QtWebsocket(QtCore.QThread):
             self.ws.send(payload)
         except Exception as e:
             logger.error("Error in QtWebsocket.send: {}".format(e))
-            dialog.WarningOk(self, "Error in QtWebsocket.send: {}".format(e), overlay=True)
 
     def authenticate(self):
         logger.info("QtWebsocket.authenticate started")
@@ -2498,10 +2512,10 @@ class QtWebsocket(QtCore.QThread):
             response = requests.post(url, data=json.dumps(payload), headers=headers)
             data = response.json()
 
-# prepare auth payload
+            # Prepare auth payload
             auth_message = {"auth": "{name}:{session}".format(**data)}
 
-# send it
+            # Send it
             self.send(auth_message)
         except Exception as e:
             logger.error("Error in QtWebsocket.authenticate: {}".format(e))
@@ -2509,14 +2523,14 @@ class QtWebsocket(QtCore.QThread):
     def on_message(self, ws, message):
         message_type = message[0]
         if message_type == "h":
-# "heartbeat" message
+            # "heartbeat" message
             self.reset_heartbeat_timer()
             return
         elif message_type == "o":
-# "open" message
+            # "open" message
             return
         elif message_type == "c":
-# "close" message
+            # "close" message
             return
 
         message_body = message[1:]
@@ -2530,14 +2544,18 @@ class QtWebsocket(QtCore.QThread):
         if message_type == "a":
             self.process(data)
 
-    def on_open(self,ws):        
+    def on_open(self, ws):
+        logger.info("WebSocket connection opened")
+        self.reconnect_attempts = 0  # Reset reconnect attempts
         self.authenticate()
 
     def on_close(self, ws):
-        logger.warning("WebSocket connection closed")
+        logger.warning("WebSocket connection closed. Attempting to reconnect...")
+        self.reestablish_connection()
 
     def on_error(self, ws, error):
         logger.error("WebSocket error: {}".format(error))
+        self.reestablish_connection()
 
     @run_async
     def process(self, data):
