@@ -22,7 +22,7 @@ import glob
 from PyQt5 import QtCore, QtGui, QtWidgets
 import time
 import sys
-import subprocess
+import subprocess 
 from octoprintAPI import octoprintAPI
 from hurry.filesize.filesize import size
 from datetime import datetime
@@ -162,7 +162,7 @@ calibrationPosition = {'X1': 110, 'Y1': 67,
 
 tool0PurgePosition = {'X': 15, 'Y': -43}
 
-ptfeTubeLength = 2000
+ptfeTubeLength = 1600
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -1242,7 +1242,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.unloadFilament started")
         try:
-# Move to the purge position for tool0
+            # Disable SFS
+            octopiclient.gcode(command="SFS_ENABLE0")
+            
+            # Move to the purge position for tool0
             if self.printerStatusText not in ["Printing", "Paused"]:
                 octopiclient.jog(tool0PurgePosition['X'], tool0PurgePosition["Y"], absolute=True, speed=10000)
 
@@ -1260,6 +1263,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.changeFilamentHeatingFlag = False
             logger.error("Error in MainUiClass.unloadFilament: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.unloadFilament: {}".format(e), overlay=True)
+        finally:
+            # Re-enable SFS
+            octopiclient.gcode(command="SFS_ENABLE1")
 
     def loadFilament(self):
         """
@@ -1267,6 +1273,10 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
         """
         logger.info("MainUiClass.loadFilament started")
         try:
+            # Disable SFS
+            octopiclient.gcode(command="SFS_ENABLE0")
+            
+            # Move to the purge position for tool0
             if self.printerStatusText not in ["Printing", "Paused"]:
                 octopiclient.jog(tool0PurgePosition['X'], tool0PurgePosition["Y"], absolute=True, speed=10000)
 
@@ -1284,7 +1294,9 @@ class MainUiClass(QtWidgets.QMainWindow, mainGUI.Ui_MainWindow):
             self.changeFilamentHeatingFlag = False
             logger.error("Error in MainUiClass.loadFilament: {}".format(e))
             dialog.WarningOk(self, "Error in MainUiClass.loadFilament: {}".format(e), overlay=True)
-
+        finally:
+            # Re-enable SFS
+            octopiclient.gcode(command="SFS_ENABLE1")
 
     @run_async
     def changeFilamentLoadFunction(self):
@@ -2739,4 +2751,4 @@ if __name__ == '__main__':
     # charm.activateOn(MainWindow.FileListWidget)
 sys.exit(app.exec_())
 
-# 6 25 pm
+# 13 may 1054
