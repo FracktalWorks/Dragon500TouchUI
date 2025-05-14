@@ -175,7 +175,7 @@ QStatusBar::item {
 background-color: rgb(40, 40, 40);</string>
     </property>
     <property name="currentIndex">
-     <number>22</number>
+     <number>8</number>
     </property>
     <widget class="QWidget" name="loadingPage">
      <widget class="QLabel" name="LoadingLabel">
@@ -1824,7 +1824,7 @@ QScrollBar::down-arrow:vertical {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>719</width>
+         <width>799</width>
          <height>900</height>
         </rect>
        </property>
@@ -3896,6 +3896,16 @@ QComboBox QAbstractItemView {
     background: white;
 }</string>
       </property>
+      <item>
+       <property name="text">
+        <string>Dragon 500</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Dragon 400</string>
+       </property>
+      </item>
       <item>
        <property name="text">
         <string>Twin Dragon 600</string>
